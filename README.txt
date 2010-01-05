@@ -4,7 +4,8 @@
 
 == DESCRIPTION:
 
-git_hub is a new project that... FIXME (describe your package)
+git_hub is a library that wraps github API and exposes simple interface for
+finding, creating and managing github repositories and other resources.
 
 == FEATURES/PROBLEMS:
 
@@ -14,7 +15,17 @@ Contributors always welcome!
 
 == SYNOPSIS:
 
-* FIXME (code sample of usage)
+require 'git_hub'
+include GitHub
+
+# Find existing repos
+repo = Repo.find(:user=>user_name, :repo=>repo_name)
+repos = Repo.find(:user=>user_name)
+search_repos = Repo.find(:query=>['search','terms'])
+
+# Create new repo (need to authenticate with your github credentials first)
+Api.auth = {:user=>user_name, :token=>token}
+new_repo = Repo.create(:name=>repo_name, :desc=>'Description', :homepage=>'http://your_page.org', :private=> false)
 
 == REQUIREMENTS:
 
@@ -22,8 +33,7 @@ Contributors always welcome!
 
 == INSTALL:
 
- <tt>$ sudo gem install git_hub</tt>
-* FIXME (anything else?)
+$ sudo gem install git_hub
 
 == LICENSE:
 

@@ -1,0 +1,247 @@
+require File.expand_path(
+        File.join(File.dirname(__FILE__), '..', 'spec_helper'))
+
+module GitHubTest
+  describe GitHub::Repo do
+    after(:each) do
+      api.auth.clear
+    end
+
+    context '::find as /show/:user)' do
+      it 'returns an array of repos for a valid github user' do
+        expect(:get, "#{github_yaml}/repos/show/joe007") do
+          repos = described_class.find(:user=>'joe007')
+          repos.should_not be_empty
+          repos.should be_an Array
+          repos.should have(3).repos
+          repos.each {|repo| repo.should be_a described_class}
+        end
+      end
+
+      it 'returns repos with "show" attributes set' do
+        expect(:get, "#{github_yaml}/repos/show/joe007") do
+          repo = described_class.find(:user=>'joe007').first
+          repo.name.should == 'fine_repo'
+          repo.url.should == 'http://github.com/joe007/fine_repo'
+          repo.clone_url.should == 'git://github.com/joe007/fine_repo.git'
+          repo.description.should == 'Fine repo by joe'
+          repo.homepage.should == ''
+          repo.watchers.should == 3
+          repo.followers.should == 3
+          repo.open_issues.should == 0
+          repo.forks.should == 0
+          repo.should_not be_fork
+          repo.should_not be_private
+          repo.owner.should == 'joe007'
+          repo.username.should == 'joe007'
+        end
+      end
+
+      it 'returns repos with "search" attributes unset' do
+        expect(:get, "#{github_yaml}/repos/show/joe007") do
+          repo = described_class.find(:user=>'joe007').first
+          repo.id.should == nil
+          repo.language.should == nil
+          repo.size.should == nil
+          repo.created.should == nil
+          repo.pushed.should == nil
+          repo.score.should == nil
+          repo.type.should == 'repo'  
+        end
+      end
+    end
+
+    context '::find as /search' do
+      it 'searches github repos with specific search terms' do
+        expect(:get, "#{github_yaml}/repos/search/joe+repo") do
+          repos = described_class.find('joe', 'repo')
+          repos.should_not be_empty
+          repos.should be_an Array
+          repos.should have(3).repos
+          repos.each {|repo| repo.should be_a described_class}
+        end
+      end
+
+      it 'returns repos with "search" attributes set' do
+        expect(:get, "#{github_yaml}/repos/search/joe+repo") do
+          repo = described_class.find('joe', 'repo').first
+          repo.name.should == 'fine_repo'
+          repo.description.should == 'Fine repo by joe'
+          repo.watchers.should == 3
+          repo.followers.should == 3
+          repo.forks.should == 0
+          repo.should_not be_fork
+          repo.owner.should == 'joe007'
+          repo.username.should == 'joe007'
+          repo.id.should == 'repo-270000'
+          repo.language.should == ''
+          repo.size.should == 1228
+          repo.created.should == '2009-08-06T00:20:39Z'
+          repo.pushed.should == '2009-11-11T22:58:52Z'
+          repo.score.should == 4.918499
+          repo.type.should == 'repo'
+          repo.clone_url.should == 'git://github.com/joe007/fine_repo.git'
+        end
+      end
+
+      it 'returns repos with "show" attributes unset' do
+        expect(:get, "#{github_yaml}/repos/search/joe+repo") do
+          repo = described_class.find('joe', 'repo').first
+          repo.url.should == 'http://github.com/joe007/fine_repo'
+          repo.homepage.should == nil
+          repo.open_issues.should == nil
+          repo.should_not be_private
+        end
+      end
+    end
+
+    context '::find as /show/user/repo' do
+      it 'finds repo of a (valid) github user' do
+        expect(:get, "#{github_yaml}/repos/show/joe007/fine_repo") do
+          repo = described_class.find(:user=>'joe007', :repo=>'fine_repo')
+          repo.should be_a described_class
+          repo.name.should == 'fine_repo'
+          repo.url.should == 'http://github.com/joe007/fine_repo'
+          repo.clone_url.should == 'git://github.com/joe007/fine_repo.git'
+          repo.description.should == 'Fine repo by joe'
+          repo.homepage.should == ''
+          repo.watchers.should == 1
+          repo.followers.should == 1
+          repo.open_issues.should == 0
+          repo.forks.should == 0
+          repo.should_not be_fork
+          repo.should_not be_private
+          repo.owner.should == 'joe007'
+          repo.username.should == 'joe007'
+        end
+      end
+
+      it 'returns error object instead of non-existing repo' do
+        expect(:get, "#{github_yaml}/repos/show/joe007/err_repo") do
+          res = described_class.find(:user=>'joe007', :repo=>'err_repo')
+          res.should have_key 'error'  # res = {"error"=>[{"error"=>"repository not found"}]}
+          res['error'].should be_kind_of Array
+          res['error'].first.should have_key 'error'
+        end
+      end
+    end
+
+    context '::create' do
+      it 'creates new repo for authenticated github user' do
+        api.auth = joe_auth
+        keys = {:name => 'new_repo', :description => 'New repo',
+                :homepage => 'http://joe.org/new_repo', :public => 1}.merge joe_auth
+        expects(:post, "#{github_yaml}/repos/create", :expected_keys=>keys, :body=>body_from_file('/repos/create'))
+        repo = described_class.create(:name=>'new_repo', :description => 'New repo',
+                                      :homepage => 'http://joe.org/new_repo', :private => false)
+        repo.should be_a described_class
+        repo.name.should == 'new_repo'
+        repo.url.should == 'http://github.com/joe007/new_repo'
+        repo.clone_url.should == 'git@github.com:joe007/new_repo.git'
+        repo.description.should == 'New repo'
+        repo.homepage.should == 'http://joe.org/new_repo'
+        repo.watchers.should == 1
+        repo.followers.should == 1
+        repo.open_issues.should == 0
+        repo.forks.should == 0
+        repo.should_not be_fork
+        repo.should_not be_private
+        repo.owner.should == 'joe007'
+        repo.username.should == 'joe007'
+      end
+    end
+
+    context '#delete' do
+      it 'deletes new repo for authenticated github user' do
+        api.auth = joe_auth
+        expect(:get, "#{github_yaml}/repos/show/joe007/new_repo")
+        repo = described_class.find(:repo=>'new_repo')
+        post1 = { :expected_keys => joe_auth,
+                  :body => body_from_file('/repos/delete/new_repo.1') }
+        post2 = { :expected_keys => {:delete_token => :any}.merge(joe_auth),
+                  :body => body_from_file('/repos/delete/new_repo.2') }
+        expects(:post, "#{github_yaml}/repos/delete/new_repo", [post1, post2])
+        res = repo.delete
+        res['status'].should == 'deleted'
+      end
+    end
+
+    it 'tests' do
+      pending
+      api.auth = joe_auth
+      expect(:get, "#{github_yaml}/repos/showp/joe007/new_repo")
+      repos = described_class.show('arvicco')
+      p repos
+      p repos.map(&:url)
+      repos.should be_an Array
+      repos.should_not be_empty
+      if repos.last.name == 'new_repo'
+        repos.last.delete
+      end
+      true.should == false
+    end
+
+#  context 'manipulating repos' do
+#    before (:each) do
+#      @gh = described_class.new('joerepo')
+#      @name = "test#{Time.now.to_i}"
+#    end
+#    after (:each) do
+#      @gh.delete_repo @name
+#    end
+#
+#    it 'creates new repo of a valid github user' do
+#      @gh.create_repo @name
+#      repos = @gh.repos
+#      repos.should_not be_empty
+#      repos.last[:name].should == @name
+#    end
+#
+#    it 'creates SINGLE new repo' do
+#      # Problem: sticky cache
+#      r = @gh.repos
+#      p r
+#      n = r.size
+#
+#      @gh.create_repo @name
+#      sleep 2
+#      rr = @gh.repos
+#      p rr
+#      rr.size.should == n+1
+#    end
+#
+#    it 'creates and deletes repo of a valid github user' do
+#      #creating
+#      @gh.create_repo @name
+#      repos = @gh.repos
+#      repos.should_not be_empty
+#      repos.last[:name].should == @name
+#
+#      #deleting
+#      @gh.delete_repo @name
+#      sleep 2
+#      repos = @gh.repos
+#      repos.last[:name].should_not == @name
+#      repos.find {|r|r[:name] == @name}.should == nil
+#      #false.should be_true
+#    end
+#
+#    it 'returns nil if deleting non-existing repo' do
+#      result = @gh.delete_repo @name
+#      result.should == nil
+#    end
+#
+#    it 'does not change repos size if deleting non-existing repo' do
+#      n = @gh.repos.size
+#
+#      @gh.delete_repo @name
+#      sleep 1.5
+#      @gh.repos.should have(n).repos
+#    end
+#  end
+#
+  end # describe GitHub::Repo
+
+end # module GithubTest
+
+# EOF

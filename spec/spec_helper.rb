@@ -1,6 +1,8 @@
-
-require File.expand_path(
-    File.join(File.dirname(__FILE__), %w[.. lib git_hub]))
+require 'spec'
+require 'cgi'
+require 'fakeweb'
+require 'fakeweb_matcher'
+require File.expand_path(File.join(File.dirname(__FILE__), %w[.. lib git_hub]))
 
 # Module that extends RSpec with my own extensions/macros
 module SpecMacros
@@ -21,14 +23,7 @@ end
 
 Spec::Runner.configure do |config|
   # Add my macros
-  config.extend(SpecMacros)	
-  
-  # Mock Framework. RSpec uses it's own mocking framework by default. If you prefer to
-  # use mocha, flexmock or RR, uncomment the appropriate line:
-  #
-  # config.mock_with :mocha
-  # config.mock_with :flexmock
-  # config.mock_with :rr
+  config.extend(SpecMacros)
 end
 
 module GitHubTest
@@ -46,4 +41,150 @@ module GitHubTest
   def any_block
     lambda {|*args| args}
   end
-end
+
+  # Extract response from file
+  def response_from_file(path)
+    filename = File.join(File.dirname(__FILE__), 'stubs', path + '.res')
+    unless File.exists?(filename) && !File.directory?(filename)
+      raise "No stub file #{filename}. To obtain it use:\n#{curl_string(path, filename)}"
+    end
+    filename
+  end
+
+  # Extract response body from file
+  def body_from_file(path)
+    File.read(response_from_file(path)).gsub(/.*\n\n/m, '')
+  end
+
+  def curl_string(path, filename)
+    auth_string = api.authenticated? ? "?login=#{api.auth['login']}&token=#{api.auth['token']}" : ""
+    "curl -i #{github_yaml}#{path}#{auth_string} > #{filename}"
+  end
+
+  # Stubs github server, with options:
+  # :host:: Host name - default 'github.com'
+  # :port:: Port - default 80
+  def stub_server(options={})
+    server = Net::HTTP.new(options[:host] ||'github.com', options[:port] || 80)
+    Net::HTTP.stub!(:new).and_return(server)
+    server
+  end
+
+  # Stubs http request, with options:
+  # :path:: Request path - default '/api/v2/yaml/repos/create'
+  # :get:: Indicates that request is get, otherwise post
+  def stub_req(options={})
+    path = options[:path] || '/api/v2/yaml/repos/create'
+    options[:get] ? Net::HTTP::Get.new(path) : Net::HTTP::Post.new(path)
+  end
+
+  def stub_server_and_req(options = {})
+    [stub_server(options), stub_req(options)]
+  end
+
+  # Turns string into appropriate class constant, returns nil if class not found
+  def classify name
+    klass = name.split("::").inject(Kernel) {|klass, const_name| klass.const_get const_name }
+    klass.is_a?(Class) ? klass : nil
+  rescue NameError
+    nil
+  end
+
+  # Builds fake HTTP response from a given options Hash. Accepts options:
+  # :klass:: Response class, default - Net::HTTPOK
+  # :http_version:: HTTP version - default 1.1
+  # :code:: Response return code - default 200
+  # :message:: Response message - default 'OK'
+  # :status:: [code, message] pair as one option
+  # :body:: Response body - default ''
+  # TODO: make it more lifelike using StringIO, instead of just stubbing :body
+  def build_response(options={})
+    code = options[:status] ? options[:status].first : options[:code] || 200
+    message = options[:status] ? options[:status].last : options[:message] || 'OK'
+    version = options[:http_version] || 1.1
+    resp = (options[:klass] || Net::HTTPOK).new(code, version, message)
+    resp.stub!(:body).and_return(options[:body] || '')
+    resp
+  end
+
+  # Expects request of certain method(:get, :post, ... :any) to specific uri (given as a String, URI or Regexp),
+  # (optionally) matches expected query keys with actuals and handles request and response according to options.
+  # In addition to build_response options (:klass, :http_version, :code, :message, :status, :body), it supports:
+  # :expected_keys:: Hash of expected query keys(if value is not important, :key => :any)
+  # :response:: Use this ready-made response object instead of building response
+  # :exception:: Raise this Exception object instead of response
+  # If you expect multiple requests to the same uri, options may also be an Array containing a list of the
+  # above-described Hashes - requests will be expected in the same order they appear in the Array
+  def expects(method, uri, options={})
+    @github ||= stub_server
+    opts = options.is_a?(Array) ? options.shift : options # may be a single options Hash or Array of Hashes
+    @github.should_receive(:request) do |req|
+      case method # match expected request method to actual
+        when :any
+          Net::HTTPRequest
+        when Class
+          method
+        when Symbol, String
+          classify('Net::HTTP::' + method.to_s.capitalize)
+      end.should === req
+      case uri # match expected uri to actual
+        when URI::HTTP, URI::HTTPS
+          uri.path
+        when String
+          URI.parse(uri).path
+        when Regexp
+          uri
+      end.should === req.path
+      if opts[:expected_keys] # match expected request query keys to actual keys
+        actuals = CGI::parse(req.body)
+        opts[:expected_keys].each do |key, val|
+          actuals.should have_key key.to_s
+          actual = actuals[key.to_s]
+          actual = actual.first if actual.size == 1 # if only one array element, extract it
+          case val # match expected key value to actual
+            when :any
+            when Class, Regexp, String
+              val.should === actual
+            else
+              val.to_s.should === actual
+          end
+        end
+      end
+      expects(method, uri, options) if options.is_a?(Array) && !options.empty? # expect next request in Array
+      raise opts[:exception] if opts[:exception] && opts[:exception].kind_of?(Exception)
+      opts[:response] || build_response(opts)
+    end
+  end
+
+  # Extends path to uri, registers it with FakeWeb with stub file at stubs/path as a response
+  # If block is given, yields to block and checks that registered uri was hit during block execution
+  def expect(method, path)
+    case path
+      when Regexp.new(github_yaml)
+        uri = path
+        file = path.sub(github_yaml, '')
+      else
+        uri = github_yaml + path
+        file = path
+    end
+    FakeWeb.register_uri(method, uri, :response=>response_from_file(file))
+    if block_given?
+      yield
+      FakeWeb.should have_requested(method, uri)
+    end
+  end
+
+  # Auth for joe
+  def joe_auth
+    {'login' => 'joe007', 'token' => 'b937c8e7ea5a5b47f94eafa39b1e0462'}
+  end
+
+  def github_yaml
+    'http://github.com/api/v2/yaml'
+  end
+
+  def api
+    GitHub::Api.instance
+  end
+
+end # module GithubTest
