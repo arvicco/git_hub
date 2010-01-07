@@ -19,8 +19,15 @@ Gem::Specification.new do |s|
      "README.rdoc"
   ]
   s.files = [
-    "Rakefile",
+    "LICENSE",
+     "README.rdoc",
+     "Rakefile",
+     "VERSION",
      "bin/git_hub",
+     "features/step_definitions/zemax_steps.rb",
+     "features/support/env.rb",
+     "features/zemax.feature",
+     "git_hub.gemspec",
      "lib/git_hub.rb",
      "lib/git_hub/api.rb",
      "lib/git_hub/base.rb",
