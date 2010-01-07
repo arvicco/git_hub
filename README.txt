@@ -5,7 +5,7 @@
 == DESCRIPTION:
 
 git_hub is a library that wraps github API and exposes simple interface for
-finding, creating and managing github repositories and other resources.
+finding, creating and managing github repositories and other resources...
 
 == FEATURES/PROBLEMS:
 
