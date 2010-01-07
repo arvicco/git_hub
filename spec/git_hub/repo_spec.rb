@@ -54,7 +54,7 @@ module GitHubTest
     context '::find as /search' do
       it 'searches github repos with specific search terms' do
         expect(:get, "#{github_yaml}/repos/search/joe+repo") do
-          repos = described_class.find('joe', 'repo')
+          repos = described_class.find(:query=>['joe', 'repo'])
           repos.should_not be_empty
           repos.should be_an Array
           repos.should have(3).repos
@@ -64,7 +64,7 @@ module GitHubTest
 
       it 'returns repos with "search" attributes set' do
         expect(:get, "#{github_yaml}/repos/search/joe+repo") do
-          repo = described_class.find('joe', 'repo').first
+          repo = described_class.find(:query=>['joe', 'repo']).first
           repo.name.should == 'fine_repo'
           repo.description.should == 'Fine repo by joe'
           repo.watchers.should == 3
@@ -86,7 +86,7 @@ module GitHubTest
 
       it 'returns repos with "show" attributes unset' do
         expect(:get, "#{github_yaml}/repos/search/joe+repo") do
-          repo = described_class.find('joe', 'repo').first
+          repo = described_class.find(:query=>['joe', 'repo']).first
           repo.url.should == 'http://github.com/joe007/fine_repo'
           repo.homepage.should == nil
           repo.open_issues.should == nil

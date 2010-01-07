@@ -56,27 +56,22 @@ module GitHub
     end
 
     class << self # Repo class methods
-      # Find repo(s) of a (valid) github user
-      # Accepts either options Hash (:owner/:user/:username and :repo/:repository/:project/:name)
-      # or several search terms as strings or symbols 
-      def find(*params)
-        if params.size == 1 && params.first.is_a?(Hash) # this is /show request
-          opts = params.first
+
+      # Find repo(s) of a (valid) github user.
+      # Accepts Hash with keys:
+      # :owner/:user/:username:: Github user name
+      # :repo/:repository/:project/:name:: Repo name
+      # :query:: Array of search terms as Strings or Symbols
+      def find(opts={})
+        if opts[:query]
+          query = opts[:query].map(&:to_s).join('+')
+          path = "/search/#{query}"
+        else
           owner = opts[:owner] || opts[:user] || opts[:username] || opts[:login] || api.auth['login'] || ''
           repo = opts[:repo] || opts[:repository] || opts[:name] || opts[:project]
           path = repo ? "/show/#{owner}/#{repo}" : "/show/#{owner}"
-        else # this is /search request, params are search terms
-          query = params.map(&:to_s).join('+')
-          path = "/search/#{query}"
         end
-        result = get(path)
-        if result['repository']
-          new result['repository']
-        elsif result['repositories']
-          result['repositories'].map {|r| new r}
-        else
-          result
-        end
+        convert_to_repo get(path)
       end
 
       alias show find
@@ -90,7 +85,7 @@ module GitHub
           repo = opts[:repo] || opts[:repository] || opts[:name] || opts[:project]
           description = opts[:description] || opts[:descr] || opts[:desc]
           homepage = opts[:homepage]
-          public = opts[:public] || !opts[:private]  # default to true
+          public = opts[:public] || !opts[:private] # default to true
         else # repo name as a single parameter
           repo = params.first.to_s
           description = nil
@@ -98,10 +93,17 @@ module GitHub
           public = false
         end
         raise("Unable to create #{self.class} without authorization") unless api.authenticated?
-        result = post("/create", 'name' => repo, 'description' => description,
-                 'homepage' => homepage, 'public' => (public ? 1 : 0))
+        convert_to_repo post("/create", 'name' => repo, 'description' => description,
+                                        'homepage' => homepage, 'public' => (public ? 1 : 0))
+      end
+
+      private
+      # TODO: generalize and move to Base?
+      def convert_to_repo result
         if result['repository']
           new result['repository']
+        elsif result['repositories']
+          result['repositories'].map {|r| new r}
         else
           result
         end
@@ -115,7 +117,7 @@ module GitHub
         post("/delete/#{@name}", 'delete_token' => result['delete_token'])
       else
         result
-      end  
+      end
     end
 
     def add_service
