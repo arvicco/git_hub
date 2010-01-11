@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{git_hub}
-  s.version = "0.1.0"
+  s.version = "0.2.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["arvicco"]
-  s.date = %q{2010-01-07}
+  s.date = %q{2010-01-11}
   s.default_executable = %q{git_hub}
   s.description = %q{Simple interface to github API}
   s.email = %q{arvitallian@gmail.com}
@@ -31,19 +31,45 @@ Gem::Specification.new do |s|
      "lib/git_hub.rb",
      "lib/git_hub/api.rb",
      "lib/git_hub/base.rb",
+     "lib/git_hub/commit.rb",
      "lib/git_hub/repo.rb",
+     "rdoc/classes/GitHub.html",
+     "rdoc/classes/GitHub/Api.html",
+     "rdoc/classes/GitHub/Base.html",
+     "rdoc/classes/GitHub/Repo.html",
+     "rdoc/created.rid",
+     "rdoc/files/README_rdoc.html",
+     "rdoc/files/lib/git_hub/api_rb.html",
+     "rdoc/files/lib/git_hub/base_rb.html",
+     "rdoc/files/lib/git_hub/repo_rb.html",
+     "rdoc/files/lib/git_hub_rb.html",
+     "rdoc/fr_class_index.html",
+     "rdoc/fr_file_index.html",
+     "rdoc/fr_method_index.html",
+     "rdoc/index.html",
+     "rdoc/rdoc-style.css",
      "spec/git_hub/api_spec.rb",
      "spec/git_hub/base_spec.rb",
+     "spec/git_hub/commit_spec.rb",
      "spec/git_hub/repo_spec.rb",
      "spec/spec.opts",
      "spec/spec_helper.rb",
-     "spec/stubs/repos/create.res",
+     "spec/stubs/api_route_error.res",
+     "spec/stubs/commits/list/joe007/fine_repo/master.res",
+     "spec/stubs/commits/list/joe007/fine_repo/master/README.res",
+     "spec/stubs/commits/show/joe007/fine_repo/5e61f0687c40ca48214d09dc7ae2d0d0d8fbfeb8.res",
+     "spec/stubs/repos/create.1.res",
+     "spec/stubs/repos/create.2.res",
+     "spec/stubs/repos/create.3.res",
+     "spec/stubs/repos/create.4.res",
      "spec/stubs/repos/delete/new_repo.1.res",
      "spec/stubs/repos/delete/new_repo.2.res",
      "spec/stubs/repos/search/joe+repo.res",
      "spec/stubs/repos/show/joe007.res",
      "spec/stubs/repos/show/joe007/err_repo.res",
      "spec/stubs/repos/show/joe007/fine_repo.res",
+     "spec/stubs/repos/show/joe007/fine_repo/branches.res",
+     "spec/stubs/repos/show/joe007/fine_repo/tags.res",
      "spec/stubs/repos/show/joe007/new_repo.res"
   ]
   s.homepage = %q{http://github.com/arvicco/git_hub}
@@ -54,6 +80,7 @@ Gem::Specification.new do |s|
   s.test_files = [
     "spec/git_hub/api_spec.rb",
      "spec/git_hub/base_spec.rb",
+     "spec/git_hub/commit_spec.rb",
      "spec/git_hub/repo_spec.rb",
      "spec/spec_helper.rb"
   ]
