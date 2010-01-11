@@ -65,7 +65,7 @@ module GitHubTest
           repo.owner.should == 'joe007'
           repo.username.should == 'joe007'
         end
-      end
+      end    
 
       it 'returns repos with "search" attributes unset' do
         expect(:get, "#{github_yaml}/repos/show/joe007") do

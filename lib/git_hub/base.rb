@@ -4,10 +4,10 @@ module GitHub
   class Base
 
     def initialize(attributes={})
-      update_attributes attributes
+      set_attributes attributes
     end
 
-    def update_attributes attributes
+    def set_attributes attributes
       attributes.each do |key, value|
         raise "No attr_accessor for #{key} on #{self.class}" unless respond_to?("#{key}=")
         self.send("#{key.to_s}=", value)
@@ -16,9 +16,9 @@ module GitHub
 
     class << self
       def request verb, uri, params = {}
-        path = uri[0] == '/' ? base_uri+uri : uri
-        #p "request: #{verb} #{path} #{params}"
-        res = api.request verb, path, params
+        full_uri = uri[0] == '/' ? base_uri+uri : uri
+        #p "request: #{verb} #{full_uri} #{params}"
+        res = api.request verb, full_uri, params
         YAML::load(res.body) if res.respond_to?(:body)
         #p "response: #{res}: #{res.code}: #{res.http_version}: #{res.message}", res.body
       end
@@ -42,7 +42,7 @@ module GitHub
       end
 
       def base_uri
-        @base_uri || ""
+        @base_uri || ''
       end
 
       private
@@ -58,17 +58,13 @@ module GitHub
       end
 
       def instantiate hash
-        if res = contains(hash, @singulars)
+        if res = hash.values_at(*@singulars).compact.first
           new res
-        elsif res = contains(hash, @plurals)
+        elsif res = hash.values_at(*@plurals).compact.first
           res.map {|r| new r}
         else
           hash
         end
-      end
-
-      def contains hash, keys
-        keys.inject(nil) {|memo, key| memo ||= hash[key.to_s]}
       end
     end
 

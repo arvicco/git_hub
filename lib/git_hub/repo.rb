@@ -35,7 +35,7 @@ module GitHub
       raise "Unable to initialize #{self.class} without name" unless user && name     
       @url ||= "http://github.com/#{user}/#{name}"
       @type ||= "repo"
-    end
+    end 
 
     alias followers= watchers=
     alias followers watchers
