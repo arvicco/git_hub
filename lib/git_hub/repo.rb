@@ -24,7 +24,7 @@ module GitHub
 #	twitter = username, password, digest
     }
 
-    base_uri 'http://github.com/api/v2/yaml/repos'
+    set_resource 'http://github.com/api/v2/yaml/repos', 'repository', 'repositories'
 
     attr_accessor :name, :owner, :description, :url, :homepage, :open_issues, :watchers, :forks, :fork, :private,
                   # additional attributes from search:
@@ -32,8 +32,8 @@ module GitHub
 
     def initialize options
       super
-      raise "Unable to initialize #{self.class} without name" unless @name
-      @url ||= "http://github.com/#{@owner}/#{@name}"
+      raise "Unable to initialize #{self.class} without name" unless user && name     
+      @url ||= "http://github.com/#{user}/#{name}"
       @type ||= "repo"
     end
 
@@ -41,6 +41,8 @@ module GitHub
     alias followers watchers
     alias username= owner=
     alias username owner
+    alias user= owner=
+    alias user owner
 
     def fork?;
       !!self.fork
@@ -51,70 +53,62 @@ module GitHub
     end
 
     def clone_url
-      url = private? || api.auth['login'] == self.owner ? "git@github.com:" : "git://github.com/"
-      url += "#{self.owner}/#{self.name}.git"
+      url = private? || api.auth['login'] == self.user ? "git@github.com:" : "git://github.com/"
+      url += "#{self.user}/#{self.name}.git"
+    end
+
+    def tags
+      result = get "/show/#{self.user}/#{self.name}/tags"
+      result['tags'] || result
+    end
+
+    def branches
+      result = get "/show/#{self.user}/#{self.name}/branches"
+      result['branches'] || result
+    end
+
+    def commits opts = {}
+       Commit.find opts.merge(:user => self.user, :repo => self.name)
     end
 
     class << self # Repo class methods
 
-      # Find repo(s) of a (valid) github user.
-      # Accepts Hash with keys:
+      # Find repo(s) of a (valid) github user, accepts Hash with keys:
       # :owner/:user/:username:: Github user name
       # :repo/:repository/:project/:name:: Repo name
-      # :query:: Array of search terms as Strings or Symbols
-      def find(opts={})
-        if opts[:query]
-          query = opts[:query].map(&:to_s).join('+')
-          path = "/search/#{query}"
+      # :query/:search:: Array of search terms as Strings or Symbols
+      def find(opts)
+        normalize opts
+        path = if opts[:query]
+          "/search/#{opts[:query].map(&:to_s).join('+')}"
+        elsif opts[:user] && opts[:repo]
+          "/show/#{opts[:user]}/#{opts[:repo]}" 
+        elsif opts[:user]
+          "/show/#{opts[:user]}"
         else
-          owner = opts[:owner] || opts[:user] || opts[:username] || opts[:login] || api.auth['login'] || ''
-          repo = opts[:repo] || opts[:repository] || opts[:name] || opts[:project]
-          path = repo ? "/show/#{owner}/#{repo}" : "/show/#{owner}"
+          raise "Unable to find #{self.class}(s) for #{opts}"
         end
-        convert_to_repo get(path)
+        instantiate get(path)
       end
 
       alias show find
       alias search find
 
       # Create new github repo, accepts Hash with :repo, :description, :homepage, :public/:private
-      # or repo name as a single parameter
-      def create(*params)
-        if params.size == 1 && params.first.is_a?(Hash)
-          opts = params.first
-          repo = opts[:repo] || opts[:repository] || opts[:name] || opts[:project]
-          description = opts[:description] || opts[:descr] || opts[:desc]
-          homepage = opts[:homepage]
-          public = opts[:public] || !opts[:private] # default to true
-        else # repo name as a single parameter
-          repo = params.first.to_s
-          description = nil
-          homepage = nil
-          public = false
-        end
-        raise("Unable to create #{self.class} without authorization") unless api.authenticated?
-        convert_to_repo post("/create", 'name' => repo, 'description' => description,
-                                        'homepage' => homepage, 'public' => (public ? 1 : 0))
-      end
-
-      private
-      # TODO: generalize and move to Base?
-      def convert_to_repo result
-        if result['repository']
-          new result['repository']
-        elsif result['repositories']
-          result['repositories'].map {|r| new r}
-        else
-          result
-        end
+      def create(opts)
+        normalize opts
+        api.ensure_auth opts
+        instantiate post("/create", 'name' => opts[:repo], 'description' => opts[:description],
+                             'homepage' => opts[:homepage], 'public' => (opts[:public] ? 1 : 0))  
       end
     end
 
-    # Delete github repo
-    def delete
-      result = post("/delete/#{@name}")
+    # Delete github repo, accepts optional Hash with authentication
+    def delete(opts = {})
+      api.ensure_auth opts
+      result = post("/delete/#{name}")
       if result['delete_token']
-        post("/delete/#{@name}", 'delete_token' => result['delete_token'])
+        post("/delete/#{name}", 'delete_token' => result['delete_token'])
       else
         result
       end

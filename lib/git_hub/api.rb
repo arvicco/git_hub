@@ -15,6 +15,12 @@ module GitHub
       auth != {}
     end
 
+    def ensure_auth opts ={}
+      return if authenticated?
+      @auth = {'login'=>opts[:login], 'token'=>opts[:token]}
+      raise("Authentication failed") unless authenticated?
+    end
+
     # Turns string into appropriate class constant, returns nil if class not found
     def classify name
       klass = name.split("::").inject(Kernel) {|klass, const_name| klass.const_get const_name }

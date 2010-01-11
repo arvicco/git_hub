@@ -29,9 +29,9 @@ module GitHubTest
         described_class.post ('/blah')
       end
 
-      it 'prepends get/post calls to api by string set by base_uri class macro' do
+      it 'prepends get/post calls by content of @base_uri variable' do
         base = described_class.new
-        described_class.class_eval { base_uri 'http://base1.com' }
+        described_class.class_eval { @base_uri = 'http://base1.com' }
         api.should_receive(:request).with(:get, 'http://base1.com/blah', anything()).twice
         base.get ('/blah')
         described_class.get ('/blah')

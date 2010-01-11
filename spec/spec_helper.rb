@@ -16,7 +16,7 @@ module SpecMacros
   # reads description line from source file and drops external brackets (like *spec*{}, *use*{})
   def description_from(file, line)
     File.open(file) do |f|
-      f.lines.to_a[line-1].gsub( Regexp.new('(spec.*?{)|(use.*?{)|}'), '' ).lstrip.rstrip
+      f.lines.to_a[line-1].gsub( Regexp.new('(spec.*?{)|(use.*?{)|}'), '' ).strip
     end
   end
 end
@@ -37,11 +37,6 @@ module GitHubTest
     lambda {yield}.should_not raise_error
   end
 
-  # Returns empty block (for use in spec descriptions)
-  def any_block
-    lambda {|*args| args}
-  end
-
   # Extract response from file
   def response_from_file(path)
     filename = File.join(File.dirname(__FILE__), 'stubs', path + '.res')
@@ -57,8 +52,11 @@ module GitHubTest
   end
 
   def curl_string(path, filename)
-    auth_string = api.authenticated? ? "?login=#{api.auth['login']}&token=#{api.auth['token']}" : ""
-    "curl -i #{github_yaml}#{path}#{auth_string} > #{filename}"
+    if api.authenticated?
+      "curl -i -d \"login=#{api.auth['login']}&token=#{api.auth['token']}\" #{github_yaml}#{path} > #{filename}"
+    else
+      "curl -i #{github_yaml}#{path} > #{filename}"
+    end
   end
 
   # Stubs github server, with options:
@@ -186,5 +184,34 @@ module GitHubTest
   def api
     GitHub::Api.instance
   end
+
+  # specific expectations used in more than one spec file
+  def should_be_5e61 commit
+    arvicco = { 'name'=> 'arvicco', 'email'=> 'arvitallian@gmail.com'}
+    commit.should be_a GitHub::Commit
+    commit.sha.should == '5e61f0687c40ca48214d09dc7ae2d0d0d8fbfeb8'
+    commit.url.should == 'http://github.com/joe007/fine_repo/commit/5e61f0687c40ca48214d09dc7ae2d0d0d8fbfeb8'
+    commit.committed_date.should == "2010-01-08T02:49:26-08:00"
+    commit.authored_date.should == "2010-01-08T02:49:26-08:00"
+    commit.message.should == 'Version bump to 0.1.2'
+    commit.tree.should == '917a288e375020ac4c0f4413dc6f23d6f06fc51b'
+    commit.author.should == arvicco
+    commit.committer.should == arvicco
+  end
+
+  def should_be_543b commit
+    arvicco = { 'name'=> 'arvicco', 'email'=> 'arvitallian@gmail.com'}
+    commit.should be_a GitHub::Commit
+    commit.parents.should == []
+    commit.sha.should == '4f223bdbbfe6acade73f4b81d089f0705b07d75d'
+    commit.url.should == 'http://github.com/joe007/fine_repo/commit/4f223bdbbfe6acade73f4b81d089f0705b07d75d'
+    commit.committed_date.should == "2010-01-08T01:20:55-08:00"
+    commit.authored_date.should == "2010-01-08T01:20:55-08:00"
+    commit.message.should == 'First commit'
+    commit.tree.should == '543b9bebdc6bd5c4b22136034a95dd097a57d3dd'
+    commit.author.should == arvicco
+    commit.committer.should == arvicco
+  end
+
 
 end # module GithubTest
