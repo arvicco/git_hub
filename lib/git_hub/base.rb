@@ -47,7 +47,7 @@ module GitHub
 
       private
 
-      # retrieves arguments described by *args from a Hash opts
+      # retrieves arguments described by *args from an opts Hash
       def retrieve(opts, *args)
         args.map do |arg|
           opts[arg] || opts[arg.to_sym] || case arg.to_sym
@@ -64,12 +64,14 @@ module GitHub
             when :branch
               'master'
             when :public
-              opts[:public] == false ? false : (opts[:public] || !opts[:private])
+              !opts[:private] unless opts[:public] == false
             else
           end
         end
       end
 
+      # tries to single instance or an Array of instances for a given Hash of
+      # attributes Hash(es), returns original Hash if unsuccessful
       def instantiate hash
         if res = hash.values_at(*@singulars).compact.first
           new res
