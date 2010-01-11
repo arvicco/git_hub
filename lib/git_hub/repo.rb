@@ -78,13 +78,13 @@ module GitHub
       # :repo/:repository/:project/:name:: Repo name
       # :query/:search:: Array of search terms as Strings or Symbols
       def find(opts)
-        normalize opts
-        path = if opts[:query]
-          "/search/#{opts[:query].map(&:to_s).join('+')}"
-        elsif opts[:user] && opts[:repo]
-          "/show/#{opts[:user]}/#{opts[:repo]}" 
-        elsif opts[:user]
-          "/show/#{opts[:user]}"
+        user, repo, query = retrieve opts, :user, :repo, :query
+        path = if query
+          "/search/#{query.map(&:to_s).join('+')}"
+        elsif user && repo
+          "/show/#{user}/#{repo}"
+        elsif user
+          "/show/#{user}"
         else
           raise "Unable to find #{self.class}(s) for #{opts}"
         end
@@ -96,12 +96,12 @@ module GitHub
 
       # Create new github repo, accepts Hash with :repo, :description, :homepage, :public/:private
       def create(opts)
-        normalize opts
+        repo, desc, homepage, public = retrieve opts, :repo, :desc, :homepage, :public
         api.ensure_auth opts
-        instantiate post("/create", 'name' => opts[:repo], 'description' => opts[:description],
-                             'homepage' => opts[:homepage], 'public' => (opts[:public] ? 1 : 0))  
+        instantiate post("/create", 'name' => repo, 'description' => desc,
+                             'homepage' => homepage, 'public' => (public ? 1 : 0))
       end
-    end
+    end 
 
     # Delete github repo, accepts optional Hash with authentication
     def delete(opts = {})
@@ -112,7 +112,7 @@ module GitHub
       else
         result
       end
-    end
+    end 
 
     def add_service
     end

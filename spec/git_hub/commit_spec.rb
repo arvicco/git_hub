@@ -21,7 +21,7 @@ module GitHubTest
 
       it 'finds all commits for a specific id path' do
         expect(:get, "#{github_yaml}/commits/list/joe007/fine_repo/master/README") do
-          commits = GitHub::Commit.find(:user=>'joe007', :repo=>'fine_repo', :path=> 'README')
+          commits = GitHub::Commit.find(:user=>'joe007', :repo=>'fine_repo', :path=>'README')
           commits.should be_an Array
           commits.should_not be_empty
           commits.should have(1).commit

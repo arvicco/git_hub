@@ -47,14 +47,27 @@ module GitHub
 
       private
 
-      def normalize opts
-        opts[:user] ||= opts[:owner] || opts[:username] || opts[:login] || api.auth['login']
-        opts[:repo] ||= opts[:repository] || opts[:name] || opts[:project]
-        opts[:sha] ||= opts[:hash] || opts[:object_id] || opts[:id]
-        opts[:description] ||= opts[:descr] || opts[:desc]
-        opts[:query] ||= opts[:search]
-        opts[:branch] ||= 'master'
-        opts[:public] ||= !opts[:private] unless opts[:public] = false # defaults to true
+      # retrieves arguments described by *args from a Hash opts
+      def retrieve(opts, *args)
+        args.map do |arg|
+          opts[arg] || opts[arg.to_sym] || case arg.to_sym
+            when :user
+              opts[:owner] || opts[:username] || opts[:login] || api.auth['login']
+            when :repo
+              opts[:repository] || opts[:name] || opts[:project]
+            when :sha
+              opts[:hash] || opts[:object_id] || opts[:id]
+            when :desc
+              opts[:description] || opts[:descr]
+            when :query
+              opts[:search]
+            when :branch
+              'master'
+            when :public
+              opts[:public] == false ? false : (opts[:public] || !opts[:private])
+            else
+          end
+        end
       end
 
       def instantiate hash

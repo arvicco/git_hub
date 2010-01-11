@@ -26,14 +26,14 @@ module GitHub
       # :path:: For specific path
       # :sha/:hash/:id:: Unique commit id (sha)
       def find(opts)
-        normalize opts
-        raise "Unable to find Commits for #{opts}" unless opts[:user] && opts[:repo]
-        path = if opts[:sha]
-          "/show/#{opts[:user]}/#{opts[:repo]}/#{opts[:sha]}"
-        elsif opts[:path]
-          "/list/#{opts[:user]}/#{opts[:repo]}/#{opts[:branch]}/#{opts[:path]}"
+        user, repo, branch, sha, path = retrieve opts, :user, :repo, :branch, :sha, :path 
+        raise "Unable to find Commits for #{opts}" unless user && repo
+        path = if sha
+          "/show/#{user}/#{repo}/#{sha}"
+        elsif path
+          "/list/#{user}/#{repo}/#{branch}/#{path}"
         else
-          "/list/#{opts[:user]}/#{opts[:repo]}/#{opts[:branch]}"
+          "/list/#{user}/#{repo}/#{branch}"
         end
         instantiate get(path)
       end
