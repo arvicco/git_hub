@@ -18,17 +18,17 @@ Contributors always welcome!
   require 'git_hub'
   include GitHub
 
-# Find existing repos:
+Find existing repos:
   repo = Repo.find(:user=>user_name, :repo=>repo_name)
   repos = Repo.find(:user=>user_name)
   search_repos = Repo.find(:query=>['search','terms'])
 
-# Retrieve tags, branches and commits for a repo:
+Retrieve tags, branches and commits for a repo:
   puts repo.tags['v0.1.0'].committer
   puts repo.branches['master'].committed_date
   repo.commits.each {|commit| p commit.author}
 
-# Retrieve info for a specific commit:
+Retrieve info for a specific commit:
   commits = Commit.find(:user=>user_name, :repo=>repo_name, :branch=>'master')
   commits = Commit.find(:user=>user_name, :repo=>repo_name, :branch=>'master', :path=>'README.rdoc')
   commit = Commit.find(:user=>user_name, :repo=>repo_name, :sha=>'commit_sha')
@@ -37,7 +37,7 @@ Contributors always welcome!
   commit = repo.tags['v0.1.0']
   commit = repo.branches['master']  # returns most recent commit for a branch
 
-# Create new repo or delete existing repo (need to authenticate with your github credentials first)
+Create new repo or delete existing repo (need to authenticate with your github credentials first)
   Api.auth = {:user=>user_name, :token=>token}
   new_repo = Repo.create(:name=>repo_name, :desc=>'Description', :homepage=>'http://your_page.org', :private=> false)
   new_repo.delete

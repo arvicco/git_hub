@@ -26,23 +26,23 @@ module GitHub
 
     set_resource 'http://github.com/api/v2/yaml/repos', 'repository', 'repositories'
 
-    attr_accessor :name, :owner, :description, :url, :homepage, :open_issues, :watchers, :forks, :fork, :private,
+    attr_accessor :name, :user, :description, :url, :homepage, :open_issues, :watchers, :forks, :fork, :private,
                   # additional attributes from search:
                   :id, :type, :size, :language, :created, :pushed, :score #?
 
     def initialize options
       super
-      raise "Unable to initialize #{self.class} without user and name" unless user && name     
-      @url ||= "http://github.com/#{user}/#{name}"
+      raise "Unable to initialize #{self.class} without user and name" unless @user && @name
+      @url ||= "http://github.com/#{@user}/#{@name}"
       @type ||= "repo"
     end 
 
     alias followers= watchers=
     alias followers watchers
-    alias username= owner=
-    alias username owner
-    alias user= owner=
-    alias user owner
+    alias username= user=
+    alias username user
+    alias owner= user=
+    alias owner user
 
     def fork?;
       !!fork
@@ -54,7 +54,7 @@ module GitHub
 
     def clone_url
       url = private? || api.auth['login'] == user ? "git@github.com:" : "git://github.com/"
-      url += "#{user}/#{name}.git"
+      url += "#{@user}/#{@name}.git"
     end
 
     def tags
@@ -70,7 +70,7 @@ module GitHub
     # :path:: Only commits for specific path
     # :sha/:id:: Only one commit with specific id (sha)
     def commits opts = {}
-       Commit.find opts.merge(:user => user, :repo => name)
+       Commit.find opts.merge(:user => @user, :repo => @name)
     end
 
     class << self # Repo class methods
@@ -108,10 +108,9 @@ module GitHub
     # Delete github repo, accepts optional Hash with authentication
     def delete(opts = {})
       api.ensure_auth opts
-      delete_path = "/delete/#{name}"
-      result = post(delete_path)
+      result = post("/delete/#{@name}")
       if token = result['delete_token']
-        post(delete_path, 'delete_token' => token)
+        post("/delete/#{@name}", 'delete_token' => token)
       else
         result
       end
@@ -136,10 +135,10 @@ module GitHub
     private
 
     def hash_of_commits(resource)
-      result = get "/show/#{user}/#{name}/#{resource}"
+      result = get "/show/#{@user}/#{@name}/#{resource}"
       if tagged_shas = result[resource.to_s]
         tagged_commits = tagged_shas.map do |tag,sha|
-          [tag, Commit.find(:user=>user, :repo=>name, :sha=>sha)]
+          [tag, Commit.find(:user=>@user, :repo=>@name, :sha=>sha)]
         end
         Hash[*tagged_commits.flatten]
       else

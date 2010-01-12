@@ -28,11 +28,12 @@ module GitHub
       # :sha/:id:: Only one commit with specific id (sha)
       def find(opts)
         user, repo, branch, sha, path = extract opts, :user, :repo, :branch, :sha, :path 
-        path = if sha && user && repo
+        repo_given = branch && user && repo
+        path = if sha && repo_given
           "/show/#{user}/#{repo}/#{sha}"
-        elsif path && user && repo
+        elsif path && repo_given
           "/list/#{user}/#{repo}/#{branch}/#{path}"
-        elsif branch && user && repo
+        elsif repo_given
           "/list/#{user}/#{repo}/#{branch}"
         else
           raise "Unable to find #{self.class}(s) for #{opts}"
