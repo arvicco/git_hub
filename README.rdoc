@@ -1,6 +1,6 @@
 = git_hub
-    by:: Arvicco
-    url:: http://github.com/arvicco/git_hub
+    by: Arvicco
+    url: http://github.com/arvicco/git_hub
 
 == DESCRIPTION:
 
@@ -24,22 +24,23 @@ Contributors always welcome!
   search_repos = Repo.find(:query=>['search','terms'])
 
 # Retrieve tags, branches and commits for a repo:
-  puts repo.tags['v0.1.0']
-  puts repo.branches['master']
+  puts repo.tags['v0.1.0'].committer
+  puts repo.branches['master'].committed_date
   repo.commits.each {|commit| p commit.author}
 
 # Retrieve info for a specific commit:
-commits = Commit.find(:user=>user_name, :repo=>repo_name, :branch=>'master')
-commits = Commit.find(:user=>user_name, :repo=>repo_name, :branch=>'master', :path=>'README.rdoc')
-commit = Commit.find(:user=>user_name, :repo=>repo_name, :sha=>'commit_sha')
-# or, if repo is already retrieved:
-commit = repo.commits.last
-commit = repo.tags['v0.1.0']  #TODO - now returns only sha, not Commit
+  commits = Commit.find(:user=>user_name, :repo=>repo_name, :branch=>'master')
+  commits = Commit.find(:user=>user_name, :repo=>repo_name, :branch=>'master', :path=>'README.rdoc')
+  commit = Commit.find(:user=>user_name, :repo=>repo_name, :sha=>'commit_sha')
+  # or, if repo is already retrieved:
+  commit = repo.commits.last
+  commit = repo.tags['v0.1.0']
+  commit = repo.branches['master']  # returns most recent commit for a branch
 
 # Create new repo or delete existing repo (need to authenticate with your github credentials first)
-Api.auth = {:user=>user_name, :token=>token}
-new_repo = Repo.create(:name=>repo_name, :desc=>'Description', :homepage=>'http://your_page.org', :private=> false)
-new_repo.delete
+  Api.auth = {:user=>user_name, :token=>token}
+  new_repo = Repo.create(:name=>repo_name, :desc=>'Description', :homepage=>'http://your_page.org', :private=> false)
+  new_repo.delete
 
 == REQUIREMENTS:
 
@@ -47,7 +48,7 @@ new_repo.delete
 
 == INSTALL:
 
-$ sudo gem install git_hub
+  $ sudo gem install git_hub
 
 == LICENSE:
 
