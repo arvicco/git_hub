@@ -67,6 +67,7 @@ module GitHub
             when :public
               !opts[:private] unless opts[:public] == false
             else
+              nil
           end
         end
       end
@@ -75,10 +76,10 @@ module GitHub
       # attributes Hash(es), returns original Hash if unsuccessful
       def instantiate hash, extra_inits={}
         raise "Expected result Hash, got #{hash}" unless hash.kind_of? Hash
-        if res = hash.values_at(*@singulars).compact.first
-          new res.merge extra_inits
-        elsif res = hash.values_at(*@plurals).compact.first
-          res.map {|r| new r.merge extra_inits}
+        if init = hash.values_at(*@singulars).compact.first
+          new init.merge extra_inits
+        elsif inits = hash.values_at(*@plurals).compact.first
+          inits.map {|init| new init.merge extra_inits}
         else
           hash
         end

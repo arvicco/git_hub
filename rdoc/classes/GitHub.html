@@ -2,7 +2,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-  <title>Module: GitHub [zemax 0.1.0
+  <title>Module: GitHub [git_hub 0.2.7
 ]</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta http-equiv="Content-Script-Type" content="text/javascript" />
@@ -74,6 +74,16 @@
         <br />
 
 
+                <a href="../files/lib/git_hub/commit_rb.html">
+
+                lib/git_hub/commit.rb
+
+                </a>
+
+
+        <br />
+
+
                 <a href="../files/lib/git_hub/repo_rb.html">
 
                 lib/git_hub/repo.rb
@@ -113,13 +123,11 @@
 
       <div class="name-list">
 
-        <a href="#M000002">libpath</a>&nbsp;&nbsp;
+        <a href="#M000001">libpath</a>&nbsp;&nbsp;
 
-        <a href="#M000003">path</a>&nbsp;&nbsp;
+        <a href="#M000002">path</a>&nbsp;&nbsp;
 
-        <a href="#M000004">require_all_libs_relative_to</a>&nbsp;&nbsp;
-
-        <a href="#M000001">version</a>&nbsp;&nbsp;
+        <a href="#M000003">require_all_libs_relative_to</a>&nbsp;&nbsp;
 
       </div>
     </div>
@@ -135,6 +143,7 @@
 
       Class <a href="GitHub/Api.html" class="link">GitHub::Api</a><br />
 Class <a href="GitHub/Base.html" class="link">GitHub::Base</a><br />
+Class <a href="GitHub/Commit.html" class="link">GitHub::Commit</a><br />
 Class <a href="GitHub/Repo.html" class="link">GitHub::Repo</a><br />
 
     </div>
@@ -149,12 +158,12 @@ Class <a href="GitHub/Repo.html" class="link">GitHub::Repo</a><br />
       <h3 class="section-bar">Public Class methods</h3>
 
 
-      <div id="method-M000002" class="method-detail">
-        <a name="M000002"></a>
+      <div id="method-M000001" class="method-detail">
+        <a name="M000001"></a>
 
         <div class="method-heading">
 
-          <a href="#M000002" class="method-signature">
+          <a href="#M000001" class="method-signature">
 
           <span class="method-name">libpath</span><span class="method-args">( *args )</span>
 
@@ -170,10 +179,10 @@ will be joined to the end of the libray path using <tt>File.join</tt>.
 </p>
 
           <p><a class="source-toggle" href="#"
-            onclick="toggleCode('M000002-source');return false;">[Source]</a></p>
-          <div class="method-source-code" id="M000002-source">
+            onclick="toggleCode('M000001-source');return false;">[Source]</a></p>
+          <div class="method-source-code" id="M000001-source">
 <pre>
-<span class="ruby-comment cmt"># File lib/git_hub.rb, line 20</span>
+<span class="ruby-comment cmt"># File lib/git_hub.rb, line 13</span>
   <span class="ruby-keyword kw">def</span> <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">libpath</span>( <span class="ruby-operator">*</span><span class="ruby-identifier">args</span> )
     <span class="ruby-identifier">args</span>.<span class="ruby-identifier">empty?</span> <span class="ruby-value">? </span><span class="ruby-constant">LIBPATH</span> <span class="ruby-operator">:</span> <span class="ruby-operator">::</span><span class="ruby-constant">File</span>.<span class="ruby-identifier">join</span>(<span class="ruby-constant">LIBPATH</span>, <span class="ruby-identifier">args</span>.<span class="ruby-identifier">flatten</span>)
   <span class="ruby-keyword kw">end</span>
@@ -184,12 +193,12 @@ will be joined to the end of the libray path using <tt>File.join</tt>.
       </div>
 
 
-      <div id="method-M000003" class="method-detail">
-        <a name="M000003"></a>
+      <div id="method-M000002" class="method-detail">
+        <a name="M000002"></a>
 
         <div class="method-heading">
 
-          <a href="#M000003" class="method-signature">
+          <a href="#M000002" class="method-signature">
 
           <span class="method-name">path</span><span class="method-args">( *args )</span>
 
@@ -205,10 +214,10 @@ joined to the end of the path using <tt>File.join</tt>.
 </p>
 
           <p><a class="source-toggle" href="#"
-            onclick="toggleCode('M000003-source');return false;">[Source]</a></p>
-          <div class="method-source-code" id="M000003-source">
+            onclick="toggleCode('M000002-source');return false;">[Source]</a></p>
+          <div class="method-source-code" id="M000002-source">
 <pre>
-<span class="ruby-comment cmt"># File lib/git_hub.rb, line 28</span>
+<span class="ruby-comment cmt"># File lib/git_hub.rb, line 21</span>
   <span class="ruby-keyword kw">def</span> <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">path</span>( <span class="ruby-operator">*</span><span class="ruby-identifier">args</span> )
     <span class="ruby-identifier">args</span>.<span class="ruby-identifier">empty?</span> <span class="ruby-value">? </span><span class="ruby-constant">PATH</span> <span class="ruby-operator">:</span> <span class="ruby-operator">::</span><span class="ruby-constant">File</span>.<span class="ruby-identifier">join</span>(<span class="ruby-constant">PATH</span>, <span class="ruby-identifier">args</span>.<span class="ruby-identifier">flatten</span>)
   <span class="ruby-keyword kw">end</span>
@@ -219,12 +228,12 @@ joined to the end of the path using <tt>File.join</tt>.
       </div>
 
 
-      <div id="method-M000004" class="method-detail">
-        <a name="M000004"></a>
+      <div id="method-M000003" class="method-detail">
+        <a name="M000003"></a>
 
         <div class="method-heading">
 
-          <a href="#M000004" class="method-signature">
+          <a href="#M000003" class="method-signature">
 
           <span class="method-name">require_all_libs_relative_to</span><span class="method-args">( fname, dir = nil )</span>
 
@@ -242,50 +251,15 @@ the <em>filename</em> does not have to be equivalent to the directory.
 </p>
 
           <p><a class="source-toggle" href="#"
-            onclick="toggleCode('M000004-source');return false;">[Source]</a></p>
-          <div class="method-source-code" id="M000004-source">
+            onclick="toggleCode('M000003-source');return false;">[Source]</a></p>
+          <div class="method-source-code" id="M000003-source">
 <pre>
-<span class="ruby-comment cmt"># File lib/git_hub.rb, line 37</span>
+<span class="ruby-comment cmt"># File lib/git_hub.rb, line 30</span>
   <span class="ruby-keyword kw">def</span> <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">require_all_libs_relative_to</span>( <span class="ruby-identifier">fname</span>, <span class="ruby-identifier">dir</span> = <span class="ruby-keyword kw">nil</span> )
     <span class="ruby-identifier">dir</span> <span class="ruby-operator">||=</span> <span class="ruby-operator">::</span><span class="ruby-constant">File</span>.<span class="ruby-identifier">basename</span>(<span class="ruby-identifier">fname</span>, <span class="ruby-value str">'.*'</span>)
-    <span class="ruby-identifier">search_me</span> = <span class="ruby-operator">::</span><span class="ruby-constant">File</span>.<span class="ruby-identifier">expand_path</span>(
-        <span class="ruby-operator">::</span><span class="ruby-constant">File</span>.<span class="ruby-identifier">join</span>(<span class="ruby-operator">::</span><span class="ruby-constant">File</span>.<span class="ruby-identifier">dirname</span>(<span class="ruby-identifier">fname</span>), <span class="ruby-identifier">dir</span>, <span class="ruby-value str">'**'</span>, <span class="ruby-value str">'*.rb'</span>))
+    <span class="ruby-identifier">search_me</span> = <span class="ruby-operator">::</span><span class="ruby-constant">File</span>.<span class="ruby-identifier">expand_path</span>(<span class="ruby-operator">::</span><span class="ruby-constant">File</span>.<span class="ruby-identifier">join</span>(<span class="ruby-operator">::</span><span class="ruby-constant">File</span>.<span class="ruby-identifier">dirname</span>(<span class="ruby-identifier">fname</span>), <span class="ruby-identifier">dir</span>, <span class="ruby-value str">'**'</span>, <span class="ruby-value str">'*.rb'</span>))
 
     <span class="ruby-constant">Dir</span>.<span class="ruby-identifier">glob</span>(<span class="ruby-identifier">search_me</span>).<span class="ruby-identifier">sort</span>.<span class="ruby-identifier">each</span> {<span class="ruby-operator">|</span><span class="ruby-identifier">rb</span><span class="ruby-operator">|</span> <span class="ruby-identifier">require</span> <span class="ruby-identifier">rb</span>}
-  <span class="ruby-keyword kw">end</span>
-</pre>
-          </div>
-
-        </div>
-      </div>
-
-
-      <div id="method-M000001" class="method-detail">
-        <a name="M000001"></a>
-
-        <div class="method-heading">
-
-          <a href="#M000001" class="method-signature">
-
-          <span class="method-name">version</span><span class="method-args">()</span>
-
-          </a>
-
-        </div>
-
-        <div class="method-description">
-
-          <p>
-Returns the version string for the library.
-</p>
-
-          <p><a class="source-toggle" href="#"
-            onclick="toggleCode('M000001-source');return false;">[Source]</a></p>
-          <div class="method-source-code" id="M000001-source">
-<pre>
-<span class="ruby-comment cmt"># File lib/git_hub.rb, line 12</span>
-  <span class="ruby-keyword kw">def</span> <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">version</span>
-    <span class="ruby-constant">VERSION</span>
   <span class="ruby-keyword kw">end</span>
 </pre>
           </div>

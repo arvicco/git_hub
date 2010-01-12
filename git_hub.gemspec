@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{git_hub}
-  s.version = "0.2.0"
+  s.version = "0.2.7"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["arvicco"]
-  s.date = %q{2010-01-11}
+  s.date = %q{2010-01-12}
   s.default_executable = %q{git_hub}
   s.description = %q{Simple interface to github API}
   s.email = %q{arvitallian@gmail.com}
@@ -24,9 +24,7 @@ Gem::Specification.new do |s|
      "Rakefile",
      "VERSION",
      "bin/git_hub",
-     "features/step_definitions/zemax_steps.rb",
      "features/support/env.rb",
-     "features/zemax.feature",
      "git_hub.gemspec",
      "lib/git_hub.rb",
      "lib/git_hub/api.rb",
@@ -57,7 +55,9 @@ Gem::Specification.new do |s|
      "spec/stubs/api_route_error.res",
      "spec/stubs/commits/list/joe007/fine_repo/master.res",
      "spec/stubs/commits/list/joe007/fine_repo/master/README.res",
+     "spec/stubs/commits/show/joe007/fine_repo/3a70f86293b719f193f778a8710b1f83f2f7bf38.res",
      "spec/stubs/commits/show/joe007/fine_repo/5e61f0687c40ca48214d09dc7ae2d0d0d8fbfeb8.res",
+     "spec/stubs/commits/show/joe007/fine_repo/f7f5dddaa37deacc83f1f56876e2b135389d03ab.res",
      "spec/stubs/repos/create.1.res",
      "spec/stubs/repos/create.2.res",
      "spec/stubs/repos/create.3.res",
@@ -82,6 +82,7 @@ Gem::Specification.new do |s|
      "spec/git_hub/base_spec.rb",
      "spec/git_hub/commit_spec.rb",
      "spec/git_hub/repo_spec.rb",
+     "spec/git_hub/user_spec.rb",
      "spec/spec_helper.rb"
   ]
 

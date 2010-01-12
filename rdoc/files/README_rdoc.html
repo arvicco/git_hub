@@ -2,7 +2,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-  <title>File: README.rdoc [zemax 0.1.0
+  <title>File: README.rdoc [git_hub 0.2.7
 ]</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta http-equiv="Content-Script-Type" content="text/javascript" />
@@ -54,7 +54,7 @@
     </tr>
     <tr class="top-aligned-row">
       <td><strong>Last Update:</strong></td>
-      <td>2010-01-07 14:46:41 +0300</td>
+      <td>2010-01-12 12:07:54 +0300</td>
     </tr>
     </table>
   </div>
@@ -67,13 +67,13 @@
     <div id="description">
       <h1>git_hub</h1>
 <pre>
-    by:: Arvicco
-    url:: http://github.com/arvicco/git_hub
+    by: Arvicco
+    url: http://github.com/arvicco/git_hub
 </pre>
 <h2>DESCRIPTION:</h2>
 <p>
 git_hub is a library that wraps github API and exposes simple interface for
-finding, creating and managing github repositories and other resources...
+finding, creating and managing github repositories and other resources.
 </p>
 <h2>FEATURES/PROBLEMS:</h2>
 <ul>
@@ -86,22 +86,47 @@ This project is quite new, so it&#8217;s probably not ready for prime time
 just yet... Contributors always welcome!
 </p>
 <h2>SYNOPSIS:</h2>
+<pre>
+  require 'git_hub'
+  include GitHub
+</pre>
 <p>
-require &#8216;git_hub&#8217; include <a
-href="../classes/GitHub.html">GitHub</a>
+Find existing repos:
 </p>
+<pre>
+  repo = Repo.find(:user=&gt;user_name, :repo=&gt;repo_name)
+  repos = Repo.find(:user=&gt;user_name)
+  search_repos = Repo.find(:query=&gt;['search','terms'])
+</pre>
 <p>
-# Find existing repos repo = Repo.find(:user=>user_name, :repo=>repo_name)
-repos = Repo.find(:user=>user_name) search_repos =
-Repo.find(:query=>[&#8216;search&#8217;,&#8217;terms&#8217;])
+Retrieve tags, branches and commits for a repo:
 </p>
+<pre>
+  puts repo.tags['v0.1.0'].committer
+  puts repo.branches['master'].committed_date
+  repo.commits.each {|commit| p commit.author}
+</pre>
 <p>
-# Create new repo (need to authenticate with your github credentials first)
-Api.auth = {:user=>user_name, :token=>token} new_repo =
-Repo.create(:name=>repo_name, :desc=>&#8217;Description&#8217;,
-:homepage=>&#8217;<a href="http://your_page.org">your_page.org</a>&#8217;,
-:private=> false)
+Retrieve info for a specific commit:
 </p>
+<pre>
+  commits = Commit.find(:user=&gt;user_name, :repo=&gt;repo_name, :branch=&gt;'master')
+  commits = Commit.find(:user=&gt;user_name, :repo=&gt;repo_name, :branch=&gt;'master', :path=&gt;'README.rdoc')
+  commit = Commit.find(:user=&gt;user_name, :repo=&gt;repo_name, :sha=&gt;'commit_sha')
+  # or, if repo is already retrieved:
+  commit = repo.commits.last
+  commit = repo.tags['v0.1.0']
+  commit = repo.branches['master']  # returns most recent commit for a branch
+</pre>
+<p>
+Create new repo or delete existing repo (need to authenticate with your
+github credentials first)
+</p>
+<pre>
+  Api.auth = {:user=&gt;user_name, :token=&gt;token}
+  new_repo = Repo.create(:name=&gt;repo_name, :desc=&gt;'Description', :homepage=&gt;'http://your_page.org', :private=&gt; false)
+  new_repo.delete
+</pre>
 <h2>REQUIREMENTS:</h2>
 <ul>
 <li>FIXME (list of requirements)
@@ -109,9 +134,9 @@ Repo.create(:name=>repo_name, :desc=>&#8217;Description&#8217;,
 </li>
 </ul>
 <h2>INSTALL:</h2>
-<p>
-$ sudo gem install git_hub
-</p>
+<pre>
+  $ sudo gem install git_hub
+</pre>
 <h2>LICENSE:</h2>
 <p>
 (The MIT License)
