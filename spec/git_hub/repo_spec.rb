@@ -204,23 +204,28 @@ module GitHubTest
         @repo = GitHub::Repo.find(:user=>'joe007', :repo=>'fine_repo')
       end
 
-      it 'retrieves repo tags' do
+      it 'retrieves repo tags as a Hash with tag name keys and Commit values' do
+        expect(:get, "#{github_yaml}/commits/show/joe007/fine_repo/3a70f86293b719f193f778a8710b1f83f2f7bf38")
+        expect(:get, "#{github_yaml}/commits/show/joe007/fine_repo/f7f5dddaa37deacc83f1f56876e2b135389d03ab")
+        expect(:get, "#{github_yaml}/commits/show/joe007/fine_repo/5e61f0687c40ca48214d09dc7ae2d0d0d8fbfeb8")
         expect(:get, "#{github_yaml}/repos/show/joe007/fine_repo/tags") do
           tags = @repo.tags
           tags.should be_kind_of Hash
           tags.should have(3).tags
+          tags.each {|tag, commit| commit.should be_a GitHub::Commit}
           tags.should have_key 'v0.1.2'
-          tags['v0.1.2'].should == '5e61f0687c40ca48214d09dc7ae2d0d0d8fbfeb8'
+          should_be_commit_5e61 tags['v0.1.2']
         end
       end
 
-      it 'retrieves repo branches' do
+      it 'retrieves repo branches as a Hash with branch name keys and Commit values' do
         expect(:get, "#{github_yaml}/repos/show/joe007/fine_repo/branches") do
           branches = @repo.branches
           branches.should be_kind_of Hash
           branches.should have(1).branches
+          branches.each {|tag, commit| commit.should be_a GitHub::Commit}
           branches.should have_key 'master'
-          branches['master'].should == '5e61f0687c40ca48214d09dc7ae2d0d0d8fbfeb8'
+          should_be_commit_5e61 branches['master']
         end
       end
 
@@ -230,14 +235,14 @@ module GitHubTest
           commits.should be_kind_of Array
           commits.should have(5).commits
           commits.each {|commit| commit.should be_a GitHub::Commit}
-          should_be_5e61 commits.first
+          should_be_commit_5e61 commits.first
         end
       end
 
       it 'retrieves commits with a specific id' do
         expect(:get, "#{github_yaml}/commits/show/joe007/fine_repo/5e61f0687c40ca48214d09dc7ae2d0d0d8fbfeb8") do
           commit = @repo.commits :sha=> '5e61f0687c40ca48214d09dc7ae2d0d0d8fbfeb8'
-          should_be_5e61 commit
+          should_be_commit_5e61 commit
         end
       end
     end

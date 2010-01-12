@@ -2,16 +2,9 @@
 module GitHub
 
   # :stopdoc:
-  VERSION = '0.0.1'
   LIBPATH = ::File.expand_path(::File.dirname(__FILE__)) + ::File::SEPARATOR
   PATH = ::File.dirname(LIBPATH) + ::File::SEPARATOR
   # :startdoc:
-
-  # Returns the version string for the library.
-  #
-  def self.version
-    VERSION
-  end
 
   # Returns the library path for the module. If any arguments are given,
   # they will be joined to the end of the libray path using
@@ -36,8 +29,7 @@ module GitHub
   #
   def self.require_all_libs_relative_to( fname, dir = nil )
     dir ||= ::File.basename(fname, '.*')
-    search_me = ::File.expand_path(
-        ::File.join(::File.dirname(fname), dir, '**', '*.rb'))
+    search_me = ::File.expand_path(::File.join(::File.dirname(fname), dir, '**', '*.rb'))
 
     Dir.glob(search_me).sort.each {|rb| require rb}
   end
@@ -45,4 +37,3 @@ module GitHub
 end  # module GitHub
 
 GitHub.require_all_libs_relative_to(__FILE__)
-

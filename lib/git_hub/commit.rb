@@ -1,13 +1,14 @@
 module GitHub
   class Commit < Base
 
-    set_resource 'http://github.com/api/v2/yaml/commits', 'commit', ['commits', 'tags', 'branches']
+    set_resource 'http://github.com/api/v2/yaml/commits', 'commit', 'commits'
 
     attr_accessor :id, :author, :committer, :parents, :url, :committed_date, :authored_date, :message, :tree,
-                  #  :user, :name, :sha, :repo,
-                  # retrieving commit for a specific sha - "/show/#{opts[:user]}/#{opts[:repo]}/#{opts[:sha]}"
-                  :added, :modified, :removed
-    
+                  # retrieving commit for a specific sha - "/show/:user/:repo/:sha" adds:
+                  :added, :modified, :removed,
+                  # extra attributes:
+                  :user, :repo
+
     def initialize opts
       super
       raise "Unable to initialize #{self.class} without id(sha)" unless sha
@@ -22,23 +23,24 @@ module GitHub
       # Find commits, accepts Hash with keys:
       # :user/:owner/:username:: Github user name
       # :repo/:repository/:project:: Repo name
-      # :branch:: Repo branch - default 'master'
-      # :path:: For specific path
-      # :sha/:hash/:id:: Unique commit id (sha)
+      # :branch:: Only commits for specific branch - default 'master'
+      # :path:: Only commits for specific path
+      # :sha/:id:: Only one commit with specific id (sha)
       def find(opts)
-        user, repo, branch, sha, path = retrieve opts, :user, :repo, :branch, :sha, :path 
-        raise "Unable to find Commits for #{opts}" unless user && repo
-        path = if sha
+        user, repo, branch, sha, path = extract opts, :user, :repo, :branch, :sha, :path 
+        path = if sha && user && repo
           "/show/#{user}/#{repo}/#{sha}"
-        elsif path
+        elsif path && user && repo
           "/list/#{user}/#{repo}/#{branch}/#{path}"
-        else
+        elsif branch && user && repo
           "/list/#{user}/#{repo}/#{branch}"
+        else
+          raise "Unable to find #{self.class}(s) for #{opts}"
         end
-        instantiate get(path)
+        instantiate get(path), :user=>user, :repo=>repo
       end
 
-      #alias show find
+      alias show find
     end
   end
 

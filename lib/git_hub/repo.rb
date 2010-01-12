@@ -32,7 +32,7 @@ module GitHub
 
     def initialize options
       super
-      raise "Unable to initialize #{self.class} without name" unless user && name     
+      raise "Unable to initialize #{self.class} without user and name" unless user && name     
       @url ||= "http://github.com/#{user}/#{name}"
       @type ||= "repo"
     end 
@@ -45,7 +45,7 @@ module GitHub
     alias user owner
 
     def fork?;
-      !!self.fork
+      !!fork
     end
 
     def private?;
@@ -53,22 +53,24 @@ module GitHub
     end
 
     def clone_url
-      url = private? || api.auth['login'] == self.user ? "git@github.com:" : "git://github.com/"
-      url += "#{self.user}/#{self.name}.git"
+      url = private? || api.auth['login'] == user ? "git@github.com:" : "git://github.com/"
+      url += "#{user}/#{name}.git"
     end
 
     def tags
-      result = get "/show/#{self.user}/#{self.name}/tags"
-      result['tags'] || result
+      hash_of_commits(:tags)
     end
 
     def branches
-      result = get "/show/#{self.user}/#{self.name}/branches"
-      result['branches'] || result
+      hash_of_commits(:branches)
     end
 
+    # Returns commits for this repo, accepts options:
+    # :branch:: Only commits for specific branch - default 'master'
+    # :path:: Only commits for specific path
+    # :sha/:id:: Only one commit with specific id (sha)
     def commits opts = {}
-       Commit.find opts.merge(:user => self.user, :repo => self.name)
+       Commit.find opts.merge(:user => user, :repo => name)
     end
 
     class << self # Repo class methods
@@ -78,7 +80,7 @@ module GitHub
       # :repo/:repository/:project/:name:: Repo name
       # :query/:search:: Array of search terms as Strings or Symbols
       def find(opts)
-        user, repo, query = retrieve opts, :user, :repo, :query
+        user, repo, query = extract opts, :user, :repo, :query
         path = if query
           "/search/#{query.map(&:to_s).join('+')}"
         elsif user && repo
@@ -96,7 +98,7 @@ module GitHub
 
       # Create new github repo, accepts Hash with :repo, :description, :homepage, :public/:private
       def create(opts)
-        repo, desc, homepage, public = retrieve opts, :repo, :desc, :homepage, :public
+        repo, desc, homepage, public = extract opts, :repo, :desc, :homepage, :public
         api.ensure_auth opts
         instantiate post("/create", 'name' => repo, 'description' => desc,
                              'homepage' => homepage, 'public' => (public ? 1 : 0))
@@ -106,9 +108,10 @@ module GitHub
     # Delete github repo, accepts optional Hash with authentication
     def delete(opts = {})
       api.ensure_auth opts
-      result = post("/delete/#{name}")
-      if result['delete_token']
-        post("/delete/#{name}", 'delete_token' => result['delete_token'])
+      delete_path = "/delete/#{name}"
+      result = post(delete_path)
+      if token = result['delete_token']
+        post(delete_path, 'delete_token' => token)
       else
         result
       end
@@ -120,10 +123,28 @@ module GitHub
     def remove_service
     end
 
+    def collaborators
+      'repos/show/:user/:repo/collaborators'
+    end
+
     def add_collaborator
     end
 
     def remove_collaborator
+    end
+
+    private
+
+    def hash_of_commits(resource)
+      result = get "/show/#{user}/#{name}/#{resource}"
+      if tagged_shas = result[resource.to_s]
+        tagged_commits = tagged_shas.map do |tag,sha|
+          [tag, Commit.find(:user=>user, :repo=>name, :sha=>sha)]
+        end
+        Hash[*tagged_commits.flatten]
+      else
+        result
+      end
     end
 
     # repos/show/:user/:repo/tags

@@ -186,7 +186,7 @@ module GitHubTest
   end
 
   # specific expectations used in more than one spec file
-  def should_be_5e61 commit
+  def should_be_commit_5e61 commit
     arvicco = { 'name'=> 'arvicco', 'email'=> 'arvitallian@gmail.com'}
     commit.should be_a GitHub::Commit
     commit.sha.should == '5e61f0687c40ca48214d09dc7ae2d0d0d8fbfeb8'
@@ -197,9 +197,11 @@ module GitHubTest
     commit.tree.should == '917a288e375020ac4c0f4413dc6f23d6f06fc51b'
     commit.author.should == arvicco
     commit.committer.should == arvicco
+    commit.user.should == 'joe007'
+    commit.repo.should == 'fine_repo'
   end
 
-  def should_be_543b commit
+  def should_be_commit_543b commit
     arvicco = { 'name'=> 'arvicco', 'email'=> 'arvitallian@gmail.com'}
     commit.should be_a GitHub::Commit
     commit.parents.should == []
@@ -211,6 +213,8 @@ module GitHubTest
     commit.tree.should == '543b9bebdc6bd5c4b22136034a95dd097a57d3dd'
     commit.author.should == arvicco
     commit.committer.should == arvicco
+    commit.user.should == 'joe007'
+    commit.repo.should == 'fine_repo'
   end
 
 

@@ -47,8 +47,9 @@ module GitHub
 
       private
 
-      # retrieves arguments described by *args from an opts Hash
-      def retrieve(opts, *args)
+      # extracts arguments described by *args from an opts Hash
+      def extract(opts, *args)
+        raise "Expected options Hash, got #{opts}" unless opts.kind_of? Hash
         args.map do |arg|
           opts[arg] || opts[arg.to_sym] || case arg.to_sym
             when :user
@@ -72,11 +73,12 @@ module GitHub
 
       # tries to single instance or an Array of instances for a given Hash of
       # attributes Hash(es), returns original Hash if unsuccessful
-      def instantiate hash
+      def instantiate hash, extra_inits={}
+        raise "Expected result Hash, got #{hash}" unless hash.kind_of? Hash
         if res = hash.values_at(*@singulars).compact.first
-          new res
+          new res.merge extra_inits
         elsif res = hash.values_at(*@plurals).compact.first
-          res.map {|r| new r}
+          res.map {|r| new r.merge extra_inits}
         else
           hash
         end
