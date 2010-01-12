@@ -33,7 +33,7 @@ module GitHub
           "/show/#{user}/#{repo}/#{sha}"
         elsif path && repo_given
           "/list/#{user}/#{repo}/#{branch}/#{path}"
-        elsif repo_given
+        elsif repo_given 
           "/list/#{user}/#{repo}/#{branch}"
         else
           raise "Unable to find #{self.class}(s) for #{opts}"
