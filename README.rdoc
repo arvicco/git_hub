@@ -15,18 +15,18 @@ Contributors always welcome!
 
 == SYNOPSIS:
 
-require 'git_hub'
-include GitHub
+  require 'git_hub'
+  include GitHub
 
 # Find existing repos:
-repo = Repo.find(:user=>user_name, :repo=>repo_name)
-repos = Repo.find(:user=>user_name)
-search_repos = Repo.find(:query=>['search','terms'])
+  repo = Repo.find(:user=>user_name, :repo=>repo_name)
+  repos = Repo.find(:user=>user_name)
+  search_repos = Repo.find(:query=>['search','terms'])
 
 # Retrieve tags, branches and commits for a repo:
-puts repo.tags['v0.1.0']
-puts repo.branches['master']
-repo.commits.each {|commit| p commit.author}
+  puts repo.tags['v0.1.0']
+  puts repo.branches['master']
+  repo.commits.each {|commit| p commit.author}
 
 # Retrieve info for a specific commit:
 commits = Commit.find(:user=>user_name, :repo=>repo_name, :branch=>'master')
