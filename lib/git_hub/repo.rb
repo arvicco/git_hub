@@ -26,9 +26,11 @@ module GitHub
 
     set_resource 'http://github.com/api/v2/yaml/repos', 'repository', 'repositories'
 
-    attr_accessor :name, :user, :description, :url, :homepage, :open_issues, :watchers, :forks, :fork, :private,
+    attr_accessor :name, :user, :description, :url, :homepage, :open_issues, :followers, :forks, :fork, :private,
                   # additional attributes from search:
                   :id, :type, :size, :language, :created, :pushed, :score #?
+
+    aliases_for :followers => :watchers, :user => [:username, :owner]
 
     def initialize options
       super
@@ -36,13 +38,6 @@ module GitHub
       @url ||= "http://github.com/#{@user}/#{@name}"
       @type ||= "repo"
     end 
-
-    alias followers= watchers=
-    alias followers watchers
-    alias username= user=
-    alias username user
-    alias owner= user=
-    alias owner user
 
     def fork?;
       !!fork

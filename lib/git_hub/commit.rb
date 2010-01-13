@@ -9,15 +9,12 @@ module GitHub
                   # extra attributes:
                   :user, :repo
 
+    aliases_for :id => [:sha, :name]
+
     def initialize opts
       super
       raise "Unable to initialize #{self.class} without id(sha)" unless sha
     end
-
-    alias name id
-    alias name= id=
-    alias sha id
-    alias sha= id=
 
     class << self
       # Find commits, accepts Hash with keys:

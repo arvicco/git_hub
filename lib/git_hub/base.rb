@@ -45,9 +45,20 @@ module GitHub
         @base_uri || ''
       end
 
+      # Meta-defines alias(es) for multiple attribute-accessors
+      def aliases_for attributes
+        attributes.each do |attr, nicks|
+          [nicks].flatten.each do |nick|
+            self.class_eval("alias #{nick} #{attr}
+                             alias #{nick}= #{attr}=")
+          end
+        end
+      end
+
       private
 
       # extracts arguments described by *args from an opts Hash
+      # TODO: replace opts[:name] with class-specific opts[:@singular]?
       def extract(opts, *args)
         raise "Expected options Hash, got #{opts}" unless opts.kind_of? Hash
         args.map do |arg|

@@ -9,6 +9,7 @@ module GitHubTest
 
     context '.find as /show/:user/:repo' do
       it 'finds repo of a (valid) github user' do
+        pending
       end
     end
   end

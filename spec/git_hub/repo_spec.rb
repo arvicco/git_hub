@@ -247,6 +247,22 @@ module GitHubTest
       end
     end
 
+    context 'following a repository' do
+      before(:each) do
+        expect(:get, "#{github_yaml}/repos/show/joe007/fine_repo")
+        @repo = GitHub::Repo.find(:user=>'joe007', :repo=>'fine_repo')
+      end
+
+      it 'watches a repository' do
+        pending
+        @repo.watch
+      end
+      it 'unwatches a repository' do
+        pending
+        @repo.watch
+      end
+    end
+
     it 'tests' do
       pending
       api.auth = joe_auth
