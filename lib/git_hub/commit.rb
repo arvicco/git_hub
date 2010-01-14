@@ -11,7 +11,7 @@ module GitHub
 
     aliases_for :id => [:sha, :name]
 
-    def initialize opts
+    def initialize(opts)
       super
       raise "Unable to initialize #{self.class} without id(sha)" unless sha
     end

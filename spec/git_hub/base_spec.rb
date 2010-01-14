@@ -7,16 +7,6 @@ module GitHubTest
       api.auth.clear
     end
 
-    context 'general' do
-      it 'has instance and class method api pointing to the same Api instance' do
-        api1 = described_class.api
-        api2 = described_class.new.api
-        api1.should be_a GitHub::Api
-        api1.should be_equal api2
-        api1.should be_equal api
-      end
-    end
-
     context 'requests' do
       it 'submits appropriate requests to api as get/post methods (both class and instance)' do
         base = described_class.new

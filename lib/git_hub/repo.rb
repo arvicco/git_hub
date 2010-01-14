@@ -32,12 +32,14 @@ module GitHub
 
     aliases_for :followers => :watchers, :user => [:username, :owner]
 
-    def initialize options
+    def initialize(opts)
       super
       raise "Unable to initialize #{self.class} without user and name" unless @user && @name
       @url ||= "http://github.com/#{@user}/#{@name}"
       @type ||= "repo"
-    end 
+      @created = Time.parse(@created) unless !@created || @created.is_a?(Time)
+      @pushed = Time.parse(@pushed) unless !@pushed ||@pushed.is_a?(Time)
+    end
 
     def fork?;
       !!fork
@@ -141,8 +143,6 @@ module GitHub
       end
     end
 
-    # repos/show/:user/:repo/tags
-    # repos/show/:user/:repo/branches
     # repos/show/:user/:repo/languages
     # repos/show/:user/:repo/network
     #

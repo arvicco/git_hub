@@ -19,8 +19,12 @@ module GitHub
         full_uri = uri[0] == '/' ? base_uri+uri : uri
         #p "request: #{verb} #{full_uri} #{params}"
         res = api.request verb, full_uri, params
-        YAML::load(res.body) if res.respond_to?(:body)
         #p "response: #{res}: #{res.code}: #{res.http_version}: #{res.message}", res.body
+        if res.respond_to?(:content_type, :body) && res.content_type =~ /application\/x-yaml/
+          YAML::load(res.body)
+        else
+          {'error' => res}
+        end
       end
 
       def get uri, params ={}
@@ -32,7 +36,7 @@ module GitHub
       end
 
       def api
-        @@api ||= Api.instance
+        Api.instance
       end
 
       def set_resource base_uri, singulars, plurals
@@ -83,14 +87,14 @@ module GitHub
         end
       end
 
-      # tries to single instance or an Array of instances for a given Hash of
-      # attributes Hash(es), returns original Hash if unsuccessful
-      def instantiate hash, extra_inits={}
+      # Creates single instance or Array of instances for a given Hash of
+      # attribute Hash(es), returns original Hash if unsuccessful
+      def instantiate hash, extra_attributes={}
         raise "Expected result Hash, got #{hash}" unless hash.kind_of? Hash
         if init = hash.values_at(*@singulars).compact.first
-          new init.merge extra_inits
+          new init.merge extra_attributes
         elsif inits = hash.values_at(*@plurals).compact.first
-          inits.map {|init| new init.merge extra_inits}
+          inits.map {|init| new init.merge extra_attributes}
         else
           hash
         end
