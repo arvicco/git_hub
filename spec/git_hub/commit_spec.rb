@@ -3,7 +3,11 @@ require File.expand_path(
 
 module GitHubTest
   describe GitHub::Commit do
+    before(:all) do
+      FakeWeb.allow_net_connect = false if TEST_FAKE_WEB
+    end
     after(:each) do
+      FakeWeb.clean_registry
       api.auth.clear
     end
 

@@ -23,7 +23,7 @@ module GitHubTest
             # additonal attributes from /search
             user.language.should == ''
             user.pushed.should == Time.parse('2009-12-30T14:15:16.972Z')
-            user.score.should == 4.1870503
+            user.score.should be_close 4.18, 0.2
           when :show, :show_auth
             # attributes differs between /show and /search
             user.public_repo_count.should == 3
@@ -49,16 +49,21 @@ module GitHubTest
         end
       when :arvicco
         user.id.should == 'user-39557'
-        user.followers_count.should == 1  
+        user.followers_count.should == 1
         user.following_count.should == 1
-        user.public_repo_count.should == 11
+        user.public_repo_count.should be_close 11.76, 0.8
         user.created.should == Time.parse('2008-12-10 05:56:19 -08:00')
     end
   end
 
   describe GitHub::User do
+    before(:all) do
+      FakeWeb.allow_net_connect = false if TEST_FAKE_WEB
+    end
     after(:each) do
+      FakeWeb.clean_registry
       api.auth.clear
+      wait
     end
 
     context '.find as /show/:user' do
@@ -80,8 +85,8 @@ module GitHubTest
       it 'fails to find invalid github user' do
         expect(:get, "#{github_yaml}/user/show/joe_is_not_github_user") do
           res = GitHub::User.find(:user=>'joe_is_not_github_user')
-          res.should have_key 'error' # res = {"error"=><html response>}
-          res['error'].message.should == 'Not Found'
+          res.code.should == 404.to_s
+          res.message.should == 'Not Found'
         end
       end
     end
@@ -95,23 +100,63 @@ module GitHubTest
       end
     end
 
-    context 'collections' do
-      it 'retrieves followers of this user' do
-        expect(:get, "#{github_yaml}/user/show/joe007/followers") do
-          expect(:get, "#{github_yaml}/user/show/arvicco") do
-            followers = joe.followers
-            followers.should be_kind_of Array
-            followers.should have(1).user
-            followers.each {|user| user.should be_a GitHub::User}
-            should_be_user followers.first, :arvicco
+    context 'following' do
+      context 'collections' do
+        it 'retrieves followers of this user' do
+          expect(:get, "#{github_yaml}/user/show/joe007/followers") do
+            expect(:get, "#{github_yaml}/user/show/arvicco") do
+              followers = joe.followers
+              followers.should be_kind_of Array
+              followers.should have(1).user
+              followers.each {|user| user.should be_a GitHub::User}
+              should_be_user followers.first, :arvicco
+            end
+          end
+        end
+
+        it 'retrieves users that are followed by this user' do
+          expect(:get, "#{github_yaml}/user/show/joe007/following") do
+            expect(:get, "#{github_yaml}/user/show/arvicco") do
+              following = joe.following
+              following.should be_kind_of Array
+              following.should have(1).user
+              following.each {|user| user.should be_a GitHub::User}
+              should_be_user following.first, :arvicco
+            end
           end
         end
       end
+      context 'actions' do
+        before(:each) do
+          expect(:get, "http://github.com/users/follow")
+          expect(:get, "#{github_yaml}/user/show/arvicco")
+          authenticate_as_joe
+        end
+        after(:each) do
+          # after - normal state is for joe to follow arvicco
+          authenticate_as_joe
+          expect(:post, "#{github_yaml}/user/follow/arvicco")
+          joe.follow :arvicco
+          wait
+        end
 
-      it 'retrieves users that are followed by this user' do
-        expect(:get, "#{github_yaml}/user/show/joe007/following") do
-          expect(:get, "#{github_yaml}/user/show/arvicco") do
-            following = joe.following
+        it 'stops following previously followed user (if authenticated)' do
+          expect(:get, "http://github.com/users/follow") do
+            expect(:get, "#{github_yaml}/user/show/joe007/following", :empty)
+            following = joe.unfollow :arvicco
+            following.should be_kind_of Array
+            following.should be_empty
+          end
+        end
+
+        it 'starts following new user (if authenticated)' do
+          # before - normal state is for joe to follow arvicco
+          expect(:get, "#{github_yaml}/user/show/joe007/following")
+          joe.unfollow :arvicco
+          wait
+
+          expect(:post, "#{github_yaml}/user/follow/arvicco") do
+            following = joe.follow :arvicco
             following.should be_kind_of Array
             following.should have(1).user
             following.each {|user| user.should be_a GitHub::User}

@@ -23,7 +23,7 @@ module GitHub
         if res.respond_to?(:content_type, :body) && res.content_type =~ /application\/x-yaml/
           YAML::load(res.body)
         else
-          {'error' => res}
+          res
         end
       end
 
@@ -90,7 +90,7 @@ module GitHub
       # Creates single instance or Array of instances for a given Hash of
       # attribute Hash(es), returns original Hash if unsuccessful
       def instantiate hash, extra_attributes={}
-        raise "Expected result Hash, got #{hash}" unless hash.kind_of? Hash
+        return hash unless hash.kind_of? Hash
         if init = hash.values_at(*@singulars).compact.first
           new init.merge extra_attributes
         elsif inits = hash.values_at(*@plurals).compact.first

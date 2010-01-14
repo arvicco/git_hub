@@ -51,12 +51,22 @@ module GitHub
     end
 
     def followers
-      get("/show/#{@name}/followers")['users'].map {|user| User.find(:user => user )}
+      res = get("/show/#{@name}/followers")
+      res['users'].map {|user| User.find(:user => user )}
     end
 
     def following
       get("/show/#{@name}/following")['users'].map {|user| User.find(:user => user )}
     end
 
+    def follow user
+      post("/follow/#{user}")['users'].map {|user| User.find(:user => user )}
+    end
+
+    def unfollow user # api /user/unfollow/:user is not working properly atm, using http
+      res = get 'http://github.com/users/follow', 'target' => user
+      raise "User Not Found #{user}" unless res.code == 302.to_s
+      following
+    end
   end
 end
