@@ -126,6 +126,7 @@ module GitHubTest
           end
         end
       end
+
       context 'actions' do
         before(:each) do
           expect(:get, "http://github.com/users/follow")

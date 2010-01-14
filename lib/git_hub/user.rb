@@ -29,7 +29,7 @@ module GitHub
       @type ||= "user"
     end
 
-    def url() "http://github.com/#{@name}" end
+    def url; "http://github.com/#{@name}" end
 
     class << self
 

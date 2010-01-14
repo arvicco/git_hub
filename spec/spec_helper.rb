@@ -29,7 +29,7 @@ end
 module GitHubTest
 
   # Test related Constants:
-  TEST_FAKE_WEB = false # turning this flag off switches on real-life github testing
+  TEST_FAKE_WEB = true # turning this flag off switches on real-life github testing
 
   # Checks that given block does not raise any errors
   def use
