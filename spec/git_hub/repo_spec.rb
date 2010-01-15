@@ -67,7 +67,7 @@ module GitHubTest
       FakeWeb.allow_net_connect = false if TEST_FAKE_WEB
     end
     after(:each) do
-      FakeWeb.clean_registry
+      FakeWeb.clean_registry if TEST_FAKE_WEB
       api.auth.clear
     end
 
@@ -123,6 +123,7 @@ module GitHubTest
     end
 
     context '.create' do
+      before(:each) {wait}
       after(:each) do
         expect(:post, "http://github.com/api/v2/yaml/repos/delete/new_repo", 1)
         @repo.delete if @repo.is_a? GitHub::Repo
@@ -166,6 +167,7 @@ module GitHubTest
         authenticate_as_joe
         expect(:post, "#{github_yaml}/repos/create", 1)
         @repo = GitHub::Repo.create(:user=>'joe007', :repo=>'new_repo')
+        raise 'Repo creation failed' unless @repo.is_a? GitHub::Repo
         wait
       end
 

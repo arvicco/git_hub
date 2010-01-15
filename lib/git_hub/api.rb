@@ -21,16 +21,8 @@ module GitHub
       raise("Authentication failed") unless authenticated?
     end
 
-    # Turns string into appropriate class constant, returns nil if class not found
-    def classify name
-      klass = name.split("::").inject(Kernel) {|klass, const_name| klass.const_get const_name }
-      klass.is_a?(Class) ? klass : nil
-    rescue NameError
-      nil
-    end
-
     def request verb, url, params = {}
-      method = classify('Net::HTTP::' + verb.to_s.capitalize)
+      method = ('Net::HTTP::' + verb.to_s.capitalize).to_class
       uri = URI.parse url
       server = Net::HTTP.new(uri.host, uri.port)
       server.use_ssl = (uri.scheme == 'https')

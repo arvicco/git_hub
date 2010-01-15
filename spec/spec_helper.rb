@@ -29,7 +29,7 @@ end
 module GitHubTest
 
   # Test related Constants:
-  TEST_FAKE_WEB = true # turning this flag off switches on real-life github testing
+  TEST_FAKE_WEB = true # turning this flag on routes all Net calls to local stubs
 
   # Checks that given block does not raise any errors
   def use
@@ -53,37 +53,16 @@ module GitHubTest
     end
   end
 
-  # Stubs github server, with options:
-  # :host:: Host name - default 'github.com'
-  # :port:: Port - default 80
-  def stub_server(options={})
-    server = Net::HTTP.new(options[:host] ||'github.com', options[:port] || 80)
-    Net::HTTP.stub!(:new).and_return(server)
-    server
-  end
-
-  # Stubs http request, with options:
-  # :path:: Request path - default '/api/v2/yaml/repos/create'
-  # :get:: Indicates that request is get, otherwise post
-  def stub_req(options={})
-    path = options[:path] || '/api/v2/yaml/repos/create'
-    options[:get] ? Net::HTTP::Get.new(path) : Net::HTTP::Post.new(path)
-  end
-
-  def stub_server_and_req(options = {})
-    [stub_server(options), stub_req(options)]
-  end
-
   # Converts path to uri, registers it with FakeWeb with stub file at stubs/(http)/path as a response
   # If extensions given (possibly as an Array), looks for stub files with extensions, responds in sequence
   # If block is given, yields to block and checks that registered uri was hit during block execution
   def expect(method, path, extensions = nil)
-    uri_path = path
     if TEST_FAKE_WEB
+      uri_path = path
       [extensions].flatten.each do |ext|
         case path
           when Regexp.new(github_yaml)
-            file_path = path.sub(github_yaml, '')
+            file_path = path.sub(github_yaml, '/yaml')
           when Regexp.new(github_http)
             file_path = path.sub(github_http, '/http')
           else
@@ -102,7 +81,7 @@ module GitHubTest
     end
   end
 
-  # Auth for joe
+  # Authenticate as joe
   def authenticate_as_joe
     api.auth = joe_auth
   end
@@ -142,18 +121,19 @@ module GitHubTest
     commit.repo.should == 'fine_repo'
     case type.to_s
       when '5e61'
+        commit.parents.should == [{"id"=>"f7f5dddaa37deacc83f1f56876e2b135389d03ab"}]
         commit.sha.should == '5e61f0687c40ca48214d09dc7ae2d0d0d8fbfeb8'
         commit.url.should == 'http://github.com/joe007/fine_repo/commit/5e61f0687c40ca48214d09dc7ae2d0d0d8fbfeb8'
-        commit.committed_date.should == "2010-01-08T02:49:26-08:00"
-        commit.authored_date.should == "2010-01-08T02:49:26-08:00"
+        commit.committed.should == Time.parse("2010-01-08T02:49:26-08:00")
+        commit.authored.should == Time.parse("2010-01-08T02:49:26-08:00")
         commit.message.should == 'Version bump to 0.1.2'
         commit.tree.should == '917a288e375020ac4c0f4413dc6f23d6f06fc51b'
       when '543b'
         commit.parents.should == []
         commit.sha.should == '4f223bdbbfe6acade73f4b81d089f0705b07d75d'
         commit.url.should == 'http://github.com/joe007/fine_repo/commit/4f223bdbbfe6acade73f4b81d089f0705b07d75d'
-        commit.committed_date.should == "2010-01-08T01:20:55-08:00"
-        commit.authored_date.should == "2010-01-08T01:20:55-08:00"
+        commit.committed.should == Time.parse("2010-01-08T01:20:55-08:00")
+        commit.authored.should == Time.parse("2010-01-08T01:20:55-08:00")
         commit.message.should == 'First commit'
         commit.tree.should == '543b9bebdc6bd5c4b22136034a95dd097a57d3dd'
     end

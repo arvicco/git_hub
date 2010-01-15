@@ -2,6 +2,27 @@ require File.expand_path(
         File.join(File.dirname(__FILE__), '..', 'spec_helper'))
 
 module GitHubTest
+  # Stubs github server, with options:
+  # :host:: Host name - default 'github.com'
+  # :port:: Port - default 80
+  def stub_server(options={})
+    server = Net::HTTP.new(options[:host] ||'github.com', options[:port] || 80)
+    Net::HTTP.stub!(:new).and_return(server)
+    server
+  end
+
+  # Stubs http request, with options:
+  # :path:: Request path - default '/api/v2/yaml/repos/create'
+  # :get:: Indicates that request is get, otherwise post
+  def stub_req(options={})
+    path = options[:path] || '/api/v2/yaml/repos/create'
+    options[:get] ? Net::HTTP::Get.new(path) : Net::HTTP::Post.new(path)
+  end
+
+  def stub_server_and_req(options = {})
+    [stub_server(options), stub_req(options)]
+  end
+
   describe GitHub::Api do
     after(:each) do
       GitHub::Api.instance.auth.clear

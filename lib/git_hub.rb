@@ -27,11 +27,9 @@ module GitHub
   # in. Optionally, a specific _directory_ name can be passed in such that
   # the _filename_ does not have to be equivalent to the directory.
   #
-  def self.require_all_libs_relative_to( fname, dir = nil )
-    dir ||= ::File.basename(fname, '.*')
-    search_me = ::File.expand_path(::File.join(::File.dirname(fname), dir, '**', '*.rb'))
-
-    Dir.glob(search_me).sort.each {|rb| require rb}
+  def self.require_all_libs_relative_to( fname )
+    ruby_files = ::File.expand_path(::File.join(::File.dirname(fname), '**', '*.rb'))
+    Dir.glob(ruby_files).sort.each {|rb| require rb}
   end
 
 end  # module GitHub

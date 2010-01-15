@@ -3,17 +3,19 @@ module GitHub
 
     set_resource 'http://github.com/api/v2/yaml/commits', 'commit', 'commits'
 
-    attr_accessor :id, :author, :committer, :parents, :url, :committed_date, :authored_date, :message, :tree,
+    attr_accessor :id, :author, :committer, :parents, :url, :committed, :authored, :message, :tree,
                   # retrieving commit for a specific sha - "/show/:user/:repo/:sha" adds:
                   :added, :modified, :removed,
                   # extra attributes:
                   :user, :repo
 
-    aliases_for :id => [:sha, :name]
+    aliases_for :id => [:sha, :name], :committed => :committed_date, :authored => :authored_date
 
     def initialize(opts)
       super
       raise "Unable to initialize #{self.class} without id(sha)" unless sha
+      @committed = Time.parse(@committed) unless @committed.is_a?(Time)
+      @authored = Time.parse(@authored) unless @authored.is_a?(Time)
     end
 
     class << self
