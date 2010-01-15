@@ -58,6 +58,12 @@ module GitHub
 
       private
 
+      NICKNAMES = { :user => [:owner, :username, :login],
+                    :repo => [:repository, :project],
+                    :sha => [:id, :object_id, :hash],
+                    :desc => [:description, :descr],
+                    :query => :search }
+
       # matches arguments supplied by args Array to parameters specified by *params
       # TODO: replace opts[:name] with class-specific opts[:@singular]?
       def extract(args, *params)
@@ -65,23 +71,15 @@ module GitHub
         params.map do |param|
           arg = args.next rescue nil
           arg ||= opts[param] || opts[param.to_sym]
-          arg || case param.to_sym
-            when :user
-              opts[:owner] || opts[:username] || opts[:login] || API.auth['login']
-            when :repo
-              opts[:repository] || opts[:name] || opts[:project]
-            when :sha
-              opts[:hash] || opts[:object_id] || opts[:id]
-            when :desc
-              opts[:description] || opts[:descr]
-            when :query
-              opts[:search]
-            when :branch
+          nicks = NICKNAMES[param.to_sym]
+          [nicks].flatten.each {|nick| arg ||= opts[nick]} if nicks
+          arg ||= case param.to_sym
+            when :user then
+              API.auth['login']
+            when :branch then
               'master'
-            when :public
+            when :public then
               !opts[:private] unless opts[:public] == false
-            else
-              nil
           end
         end
       end

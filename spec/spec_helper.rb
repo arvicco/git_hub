@@ -33,7 +33,7 @@ module GitHubTest
   API = GitHub::Api.instance
 
   # Extract response from file
-  def response_from_file(file_path, uri_path='')
+  def response_from_file( file_path, uri_path='' )
     filename = File.join(File.dirname(__FILE__), 'stubs', file_path + '.res')
     unless File.exists?(filename) && !File.directory?(filename)
       raise "No stub file #{filename}. To obtain it use:\n#{curl_string(filename, uri_path)}"
@@ -42,7 +42,7 @@ module GitHubTest
   end
 
   # Curl command to retrieve non-existent stub file
-  def curl_string(filename, uri_path)
+  def curl_string( filename, uri_path )
     if api.authenticated?
       "curl -i -d \"login=#{api.auth['login']}&token=#{api.auth['token']}\" #{uri_path} > #{filename}"
     else
