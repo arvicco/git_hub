@@ -58,21 +58,13 @@ module GitHub
 
       private
 
-      NICKNAMES = { :user => [:owner, :username, :login],
-                    :repo => [:repository, :project],
-                    :sha => [:id, :object_id, :hash],
-                    :desc => [:description, :descr],
-                    :query => :search }
-
       # matches arguments supplied by args Array to parameters specified by *params
       # TODO: replace opts[:name] with class-specific opts[:@singular]?
       def extract(args, *params)
         args, opts = args.args_and_options
         params.map do |param|
           arg = args.next rescue nil
-          arg ||= opts[param] || opts[param.to_s]
-          nicks = NICKNAMES[param]
-          [nicks].flatten.each {|nick| arg ||= opts[nick]} if nicks
+          arg ||= extract_value opts, param
           arg || case param
             when :user
               API.auth['login']
@@ -80,8 +72,23 @@ module GitHub
               'master'
             when :public
               !opts[:private] unless opts[:public] == false
+            else
+              nil
           end
         end
+      end
+
+      NICKNAMES = { :user => [:owner, :username, :login],
+                    :repo => [:repository, :project],
+                    :sha => [:id, :object_id, :hash],
+                    :desc => [:description, :descr],
+                    :query => :search }
+
+      # extracts from opts value indexed by param or any of its nicknames
+      def extract_value opts, param
+        nicks = [param, NICKNAMES[param]].flatten.compact
+        opts.values_at(*nicks).compact.first ||
+                opts.values_at(*nicks.map(&:to_s)).compact.first
       end
 
       # Creates single instance or Array of instances for a given Hash of
