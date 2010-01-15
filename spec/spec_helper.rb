@@ -1,5 +1,4 @@
 require 'spec'
-require 'cgi'
 require 'fakeweb'
 require 'fakeweb_matcher'
 require File.expand_path(File.join(File.dirname(__FILE__), %w[.. lib git_hub]))
@@ -31,25 +30,23 @@ module GitHubTest
   # Test related Constants:
   TEST_FAKE_WEB = true # turning this flag on routes all Net calls to local stubs
 
-  # Checks that given block does not raise any errors
-  def use
-    lambda {yield}.should_not raise_error
-  end
+  API = GitHub::Api.instance
 
   # Extract response from file
   def response_from_file(file_path, uri_path='')
     filename = File.join(File.dirname(__FILE__), 'stubs', file_path + '.res')
     unless File.exists?(filename) && !File.directory?(filename)
-      raise "No stub file #{filename}. To obtain it use:\n#{curl_string(uri_path, filename)}"
+      raise "No stub file #{filename}. To obtain it use:\n#{curl_string(filename, uri_path)}"
     end
     filename
   end
 
-  def curl_string(uri_path, filename)
+  # Curl command to retrieve non-existent stub file
+  def curl_string(filename, uri_path)
     if api.authenticated?
       "curl -i -d \"login=#{api.auth['login']}&token=#{api.auth['token']}\" #{uri_path} > #{filename}"
     else
-      "curl -i #{github_yaml}#{path} > #{filename}"
+      "curl -i #{uri_path} > #{filename}"
     end
   end
 
@@ -81,9 +78,14 @@ module GitHubTest
     end
   end
 
+  # Remove authentication
+  def clear_auth
+    API.auth.clear
+  end
+
   # Authenticate as joe
-  def authenticate_as_joe 
-    api.auth = joe_auth
+  def authenticate_as_joe
+    API.auth = joe_auth
   end
 
   def joe_auth
@@ -103,12 +105,15 @@ module GitHubTest
     'http://github.com/api/v2/yaml'
   end
 
-  def api
-    GitHub::Api.instance
+  # repo name for 'new_repo' for real life tests - needed because GitHub
+  # gets stuck after several attempts to create repo with the same name
+  def new_repo
+    @new_repo_name ||= TEST_FAKE_WEB ? 'new_repo' : "new_repo#{Time.now.strftime("%Y%m%d-%H%M%S")}"
   end
 
+  # waits a little bit - needed because cache is sticky on real github
   def wait
-    sleep 1 unless TEST_FAKE_WEB # cache is sticky on real github
+    sleep 1 unless TEST_FAKE_WEB
   end
 
   # specific expectations used in more than one spec file

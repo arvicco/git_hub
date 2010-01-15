@@ -25,8 +25,8 @@ module GitHub
       # :branch:: Only commits for specific branch - default 'master'
       # :path:: Only commits for specific path
       # :sha/:id:: Only one commit with specific id (sha)
-      def find(opts)
-        user, repo, branch, sha, path = extract opts, :user, :repo, :branch, :sha, :path 
+      def find( *args )
+        user, repo, branch, sha, path = extract args, :user, :repo, :branch, :sha, :path 
         repo_given = branch && user && repo
         path = if sha && repo_given
           "/show/#{user}/#{repo}/#{sha}"

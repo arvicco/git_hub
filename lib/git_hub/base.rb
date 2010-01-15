@@ -58,12 +58,14 @@ module GitHub
 
       private
 
-      # extracts arguments described by *args from an opts Hash
+      # matches arguments supplied by args Array to parameters specified by *params
       # TODO: replace opts[:name] with class-specific opts[:@singular]?
-      def extract(opts, *args)
-        raise "Expected options Hash, got #{opts}" unless opts.kind_of? Hash
-        args.map do |arg|
-          opts[arg] || opts[arg.to_sym] || case arg.to_sym
+      def extract(args, *params)
+        arg_enum, opts = split_with_opts *args
+        #p arg_enum.to_a, opts
+        params.map do |param|
+          arg = arg_enum.next rescue nil
+          arg ||= opts[param] || opts[param.to_sym] || case param.to_sym
             when :user
               opts[:owner] || opts[:username] || opts[:login] || API.auth['login']
             when :repo
@@ -84,6 +86,15 @@ module GitHub
         end
       end
 
+      # splits argument list into enumerator for normal arguments and options hash
+      def split_with_opts *args
+        if args.last.is_a?(Hash)
+          [args[0..-2].to_enum, args.last]
+        else
+          [args.to_enum, {}]
+        end
+      end
+
       # Creates single instance or Array of instances for a given Hash of
       # attribute Hash(es), returns original Hash if unsuccessful
       def instantiate hash, extra_attributes={}
@@ -91,7 +102,7 @@ module GitHub
         if init = hash.values_at(*@singulars).compact.first
           new init.merge extra_attributes
         elsif inits = hash.values_at(*@plurals).compact.first
-          inits.map {|init| new init.merge extra_attributes}
+          inits.map {|each| new each.merge extra_attributes}
         else
           hash
         end

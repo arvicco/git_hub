@@ -8,7 +8,7 @@ module GitHubTest
     end
     after(:each) do
       FakeWeb.clean_registry if TEST_FAKE_WEB
-      api.auth.clear
+      clear_auth
     end
 
     context '.find' do

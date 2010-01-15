@@ -15,7 +15,7 @@ module GitHub
 
     aliases_for :homepage => :blog, :name => [:user, :username], :created => :created_at
 
-    def initialize(opts)
+    def initialize( opts )
       @public_repo_count = opts.delete('repos')  # TODO: find better way without modifying opts?
       @followers_count = opts.delete('followers')
       super
@@ -37,8 +37,8 @@ module GitHub
       # :user/:username:: Github user name
       # :repo/:repository/:project/:name:: Repo name
       # :query/:search:: Array of search terms as Strings or Symbols
-      def find(opts)
-        user, query = extract opts, :user, :query
+      def find( *args )
+        user, query = extract args, :user, :query
         path = if query
           "/search/#{query.map(&:to_s).join('+')}"
         elsif user
@@ -59,12 +59,12 @@ module GitHub
       get("/show/#{@name}/following")['users'].map {|user| User.find(:user => user )}
     end
 
-    def follow! user
+    def follow!( user )
       API.ensure_auth
       post("/follow/#{user}")['users'].map {|user| User.find(:user => user )}
     end
 
-    def unfollow! user # api /user/unfollow/:user is not working properly atm, using http
+    def unfollow!( user )# api /user/unfollow/:user is not working properly atm, using http
       API.ensure_auth
       res = get 'http://github.com/users/follow', 'target' => user
       raise "User Not Found #{user}" unless res.code == 302.to_s

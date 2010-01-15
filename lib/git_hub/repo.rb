@@ -76,8 +76,8 @@ module GitHub
       # :owner/:user/:username:: Github user name
       # :repo/:repository/:project/:name:: Repo name
       # :query/:search:: Array of search terms as Strings or Symbols
-      def find(opts)
-        user, repo, query = extract opts, :user, :repo, :query
+      def find( *args )
+        user, repo, query = extract args, :user, :repo, :query
         path = if query
           "/search/#{query.map(&:to_s).join('+')}"
         elsif user && repo
@@ -94,17 +94,17 @@ module GitHub
       alias search find
 
       # Create new github repo, accepts Hash with :repo, :description, :homepage, :public/:private
-      def create!(opts)
-        repo, desc, homepage, public = extract opts, :repo, :desc, :homepage, :public
-        API.ensure_auth opts
+      def create!(*args)
+        repo, desc, homepage, public = extract args, :repo, :desc, :homepage, :public
+        API.ensure_auth
         instantiate post("/create", 'name' => repo, 'description' => desc,
                          'homepage' => homepage, 'public' => (public ? 1 : 0))
       end
     end 
 
     # Delete github repo, accepts optional Hash with authentication
-    def delete!(opts = {})
-      API.ensure_auth opts
+    def delete!
+      API.ensure_auth
       result = post("/delete/#{@name}")
       if token = result['delete_token']
         post("/delete/#{@name}", 'delete_token' => token)

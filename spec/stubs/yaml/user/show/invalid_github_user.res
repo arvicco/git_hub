@@ -1,8 +1,8 @@
 HTTP/1.1 404 Not Found
 Server: nginx/0.7.61
-Date: Wed, 13 Jan 2010 14:51:55 GMT
+Date: Fri, 15 Jan 2010 10:27:53 GMT
 Content-Type: text/html
-Content-Length: 3758
+Content-Length: 3773
 Connection: keep-alive
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
@@ -73,7 +73,11 @@ Connection: keep-alive
             <a href="http://twitter.com/github">Status</a>
           </div>
           <div class="company">
-            GitHub is <a href="http://logicalawesome.com/">Logical Awesome</a> &copy;2010 | <a href="http://github.com/site/terms">Terms of Service</a> | <a href="http://github.com/site/privacy">Privacy Policy</a>
+            &copy;
+            2010
+            GitHub Inc.
+            All rights reserved.
+            | <a href="http://github.com/site/terms">Terms of Service</a> | <a href="http://github.com/site/privacy">Privacy Policy</a>
           </div>
         </div>
         <div class="sponsor">

@@ -24,7 +24,7 @@ module GitHubTest
             user.language.should == ''
             user.pushed.should == Time.parse('2009-12-30T14:15:16.972Z')
             user.score.should be_close 4.18, 0.2
-          when :show, :show_auth
+          when :show
             # attributes differs between /show and /search
             user.public_repo_count.should == 3
             user.followers_count.should == 1
@@ -37,15 +37,6 @@ module GitHubTest
             user.following_count.should == 1
             user.public_gist_count.should == 0
             user.blog.should == 'http://www.joe007.org'
-            if type == :show_auth
-              # additional attributes for athenticated user
-              user.plan.should == {'name' => 'free', 'collaborators' => 0, 'space' => 307200, 'private_repos' => 0}
-              user.collaborators.should == 0
-              user.disk_usage.should == 76
-              user.private_gist_count.should == 0
-              user.owned_private_repo_count.should == 0
-              user.total_private_repo_count.should == 0
-            end
         end
       when :arvicco
         user.id.should == 'user-39557'
@@ -62,7 +53,7 @@ module GitHubTest
     end
     after(:each) do
       FakeWeb.clean_registry if TEST_FAKE_WEB
-      api.auth.clear
+      clear_auth
       wait
     end
 
@@ -74,17 +65,31 @@ module GitHubTest
         end
       end
 
+      it 'finds valid github user by name' do
+        expect(:get, "#{github_yaml}/user/show/joe007") do
+          user = GitHub::User.find('joe007')
+          should_be_user user, :joe007
+        end
+      end
+
       it 'finds authenticated github user with additional attributes set' do
         expect(:get, "#{github_yaml}/user/show/joe007", :auth) do
-          api.auth = joe_auth
+          authenticate_as_joe
           user = GitHub::User.find(:user=>'joe007')
-          should_be_user user, :joe007, :show_auth
+          should_be_user user, :joe007
+          # additional attributes for athenticated user
+          user.plan.should == {'name' => 'free', 'collaborators' => 0, 'space' => 307200, 'private_repos' => 0}
+          user.collaborators.should == 0
+          user.disk_usage.should == 76
+          user.private_gist_count.should == 0
+          user.owned_private_repo_count.should == 0
+          user.total_private_repo_count.should == 0
         end
       end
 
       it 'fails to find invalid github user' do
-        expect(:get, "#{github_yaml}/user/show/joe_is_not_github_user") do
-          res = GitHub::User.find(:user=>'joe_is_not_github_user')
+        expect(:get, "#{github_yaml}/user/show/invalid_github_user") do
+          res = GitHub::User.find(:user=>'invalid_github_user')
           res.code.should == 404.to_s
           res.message.should == 'Not Found'
         end

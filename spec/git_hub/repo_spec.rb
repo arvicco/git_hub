@@ -12,7 +12,7 @@ module GitHubTest
     repo.type.should == 'repo'
     repo.name.should == name.to_s
     repo.url.should == "http://github.com/joe007/#{name.to_s}"
-    repo.clone_url.should == if api.authenticated?
+    repo.clone_url.should == if API.authenticated?
       "git@github.com:joe007/#{name.to_s}.git"
     else
       "git://github.com/joe007/#{name.to_s}.git"
@@ -46,7 +46,7 @@ module GitHubTest
             repo.homepage.should == nil
             repo.open_issues.should == nil
         end
-      when 'new_repo'
+      when "#{new_repo}"
         repo.watchers.should == 1
         repo.followers.should == 1
         repo.open_issues.should == 0
@@ -57,7 +57,7 @@ module GitHubTest
             repo.homepage.should == nil
           when 'with_attributes'
             repo.description.should == 'New repo'
-            repo.homepage.should == 'http://joe.org/new_repo'
+            repo.homepage.should == "http://joe.org/new_repo"
         end
     end
   end
@@ -68,13 +68,20 @@ module GitHubTest
     end
     after(:each) do
       FakeWeb.clean_registry if TEST_FAKE_WEB
-      api.auth.clear
+      clear_auth
     end
 
     context '.find as /show/:user/:repo' do
-      it 'finds repo of a (valid) github user' do
+      it 'finds repo of a (valid) github user given options Hash' do
         expect(:get, "#{github_yaml}/repos/show/joe007/fine_repo") do
           repo = GitHub::Repo.find(:user=>'joe007', :repo=>'fine_repo')
+          should_be_repo repo
+        end
+      end
+
+      it 'finds repo of a (valid) github user given simple arguments' do
+        expect(:get, "#{github_yaml}/repos/show/joe007/fine_repo") do
+          repo = GitHub::Repo.find('joe007', 'fine_repo')
           should_be_repo repo
         end
       end
@@ -89,6 +96,15 @@ module GitHubTest
       it 'fails returning error object instead of non-existing repo' do
         expect(:get, "#{github_yaml}/repos/show/joe007/err_repo") do
           res = GitHub::Repo.find(:user=>'joe007', :repo=>'err_repo')
+          res.should have_key 'error' # res = {"error"=>[{"error"=>"repository not found"}]}
+          res['error'].should be_kind_of Array
+          res['error'].first.should have_key 'error'
+        end
+      end
+
+      it 'fails returning error object if user is invalid' do
+        expect(:get, "#{github_yaml}/repos/show/invalid_github_user/err_repo") do
+          res = GitHub::Repo.find('invalid_github_user', 'err_repo')
           res.should have_key 'error' # res = {"error"=>[{"error"=>"repository not found"}]}
           res['error'].should be_kind_of Array
           res['error'].first.should have_key 'error'
@@ -125,28 +141,36 @@ module GitHubTest
     context '.create!' do
       before(:each) {wait}
       after(:each) do
-        expect(:post, "http://github.com/api/v2/yaml/repos/delete/new_repo", 1)
+        authenticate_as_joe
+        expect(:post, "http://github.com/api/v2/yaml/repos/delete/#{new_repo}", 1)
         @repo.delete! if @repo.is_a? GitHub::Repo
         wait
       end
 
       it 'creates new repo for authenticated github user' do
         authenticate_as_joe
-#        keys = {:name => 'new_repo', :public => 1}.merge joe_auth # Fake_Web doesn't support key expectations yet
+#        keys = {:name => "#{new_repo}", :public => 1}.merge joe_auth # Fake_Web doesn't support key expectations yet
         expect(:post, "#{github_yaml}/repos/create", 1) do
-          @repo = GitHub::Repo.create!(:repo=>'new_repo')
-          should_be_repo @repo, 'new_repo', :simple
+          @repo = GitHub::Repo.create!(:repo=>"#{new_repo}")
+          should_be_repo @repo, "#{new_repo}", :simple
         end
       end
 
       it 'creates new repo with extended attributes' do
         authenticate_as_joe
-#        keys = {:name => 'new_repo', :description => 'New repo',  # Fake_Web doesn't support key expectations yet
-#                :homepage => 'http://joe.org/new_repo', :public => 1}.merge joe_auth
+#        keys = {:name => "#{new_repo}", :description => 'New repo',  # Fake_Web doesn't support key expectations yet
+#                :homepage => "http://joe.org/#{new_repo}", :public => 1}.merge joe_auth
         expect(:post, "#{github_yaml}/repos/create", 2)
-        @repo = GitHub::Repo.create!(:name=>'new_repo', :description => 'New repo',
+        @repo = GitHub::Repo.create!(:name=>"#{new_repo}", :description => 'New repo',
                                     :homepage => 'http://joe.org/new_repo', :private => false)
-        should_be_repo @repo, 'new_repo', :with_attributes
+        should_be_repo @repo, "#{new_repo}", :with_attributes
+      end
+
+      it 'creates new repo without options' do
+        authenticate_as_joe
+        expect(:post, "#{github_yaml}/repos/create", 2)
+        @repo = GitHub::Repo.create!("#{new_repo}", 'New repo', 'http://joe.org/new_repo', false)
+        should_be_repo @repo, "#{new_repo}", :with_attributes
       end
 
       it 'fails if repo with the same name already exists' do
@@ -163,19 +187,20 @@ module GitHubTest
 
     context '#delete!' do
       before(:each) do
+        authenticate_as_joe
         expect(:post, "#{github_yaml}/repos/create", 1)
-        @repo = GitHub::Repo.create!(:user=>'joe007', :repo=>'new_repo')
-        raise 'Repo creation failed' unless @repo.is_a? GitHub::Repo
-        wait
+        @repo = GitHub::Repo.create!(:user=>'joe007', :repo=>"#{new_repo}")
+        raise 'Repo creation failed' unless @repo.is_a?(GitHub::Repo)
+        clear_auth
       end
 
       it 'deletes new repo for authenticated github user' do
 #        post1 = { :expected_keys => joe_auth,  # Fake_Web doesn't support key expectations yet
-#                  :body => body_from_file('/repos/delete/new_repo.1') }
+#                  :body => body_from_file('/repos/delete/"#{new_repo}".1') }
 #        post2 = { :expected_keys => {:delete_token => :any}.merge(joe_auth),
-#                  :body => body_from_file('/repos/delete/new_repo.2') }
+#                  :body => body_from_file('/repos/delete/"#{new_repo}".2') }
         authenticate_as_joe
-        expect(:post, "#{github_yaml}/repos/delete/new_repo", [1, 2])
+        expect(:post, "#{github_yaml}/repos/delete/#{new_repo}", [1, 2])
         res = @repo.delete!
         res['status'].should == 'deleted'
       end
@@ -244,21 +269,6 @@ module GitHubTest
         pending
         @repo.watch
       end
-    end
-
-    it 'tests' do
-      pending
-      authenticate_as_joe
-      expect(:get, "#{github_yaml}/repos/showp/joe007/new_repo")
-      repos = GitHub::Repo.show('arvicco')
-      p repos
-      p repos.map(&:url)
-      repos.should be_an Array
-      repos.should_not be_empty
-      if repos.last.name == 'new_repo'
-        repos.last.delete
-      end
-      true.should == false
     end
 
   end # describe GitHub::Repo
