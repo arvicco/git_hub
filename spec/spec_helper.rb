@@ -82,7 +82,7 @@ module GitHubTest
   end
 
   # Authenticate as joe
-  def authenticate_as_joe
+  def authenticate_as_joe 
     api.auth = joe_auth
   end
 
