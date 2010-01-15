@@ -18,15 +18,37 @@ Contributors always welcome!
   require 'git_hub'
   include GitHub
 
+=== General notes
+There is more than one way to name things, for example when looking for repository,
+following option keys have the same effect - :repository, :repo, :project.
+
+Most methods just retrieve the state of remote github objects. Any method that intends
+to CHANGE the state of remote objects, create or delete remote objects is followed by
+exclamation (create!, delete!, set!, add!, etc) and requires authentication.
+
+=== Authentication
+
+=== Repositories API
 Find existing repos:
   repo = Repo.find(:user=>user_name, :repo=>repo_name)
   repos = Repo.find(:user=>user_name)
   search_repos = Repo.find(:query=>['search','terms'])
 
+Create new repo or delete existing repo (need to authenticate with your github credentials first)
+  Api.auth = {:user=>user_name, :token=>token}
+  new_repo = Repo.create!(:name=>repo_name, :desc=>'Description', :homepage=>'http://your_page.org', :private=> false)
+  new_repo.delete!
+
 Retrieve tags, branches and commits for a repo:
   puts repo.tags['v0.1.0'].committer
   puts repo.branches['master'].committed_date
   repo.commits.each {|commit| p commit.author}
+
+#tags and #branches returned as a hash of (latest) commits, with tag/branch name as keys.
+#commits returns an array of ALL commit objects for a repo (may take a while to load)  
+
+=== Commits API
+You can work either with commit objects either directly, or via Repo API
 
 Retrieve info for a specific commit:
   commits = Commit.find(:user=>user_name, :repo=>repo_name, :branch=>'master')
@@ -37,10 +59,16 @@ Retrieve info for a specific commit:
   commit = repo.tags['v0.1.0']
   commit = repo.branches['master']  # returns most recent commit for a branch
 
-Create new repo or delete existing repo (need to authenticate with your github credentials first)
-  Api.auth = {:user=>user_name, :token=>token}
-  new_repo = Repo.create(:name=>repo_name, :desc=>'Description', :homepage=>'http://your_page.org', :private=> false)
-  new_repo.delete
+=== Users API
+Find existing repos:
+  user = User.find(:user=>user_name)
+  search_users = User.find(:query=>['search','terms'])
+
+Retrieve/manage user's network:
+  user.followers.each {|githubber| p githubber.fullname}
+  user.following.each {|githubber| p githubber.fullname}
+  user.follow! :user=>githubber_name
+  user.unfollow! :user=>githubber_name
 
 == REQUIREMENTS:
 
@@ -49,6 +77,13 @@ Create new repo or delete existing repo (need to authenticate with your github c
 == INSTALL:
 
   $ sudo gem install git_hub
+
+== PRIOR ART:
+
+Le-Git - http://github.com/technicalpickles/le-git
+Octopi - http://github.com/fcoury/octopi
+Github-gem  - http://github.com/defunkt/github-gem
+Github-control - http://github.com/halorgium/github-control
 
 == LICENSE:
 

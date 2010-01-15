@@ -122,11 +122,11 @@ module GitHubTest
       end
     end
 
-    context '.create' do
+    context '.create!' do
       before(:each) {wait}
       after(:each) do
         expect(:post, "http://github.com/api/v2/yaml/repos/delete/new_repo", 1)
-        @repo.delete if @repo.is_a? GitHub::Repo
+        @repo.delete! if @repo.is_a? GitHub::Repo
         wait
       end
 
@@ -134,18 +134,17 @@ module GitHubTest
         authenticate_as_joe
 #        keys = {:name => 'new_repo', :public => 1}.merge joe_auth # Fake_Web doesn't support key expectations yet
         expect(:post, "#{github_yaml}/repos/create", 1) do
-          @repo = GitHub::Repo.create(:repo=>'new_repo')
+          @repo = GitHub::Repo.create!(:repo=>'new_repo')
           should_be_repo @repo, 'new_repo', :simple
         end
       end
 
       it 'creates new repo with extended attributes' do
-        wait
         authenticate_as_joe
 #        keys = {:name => 'new_repo', :description => 'New repo',  # Fake_Web doesn't support key expectations yet
 #                :homepage => 'http://joe.org/new_repo', :public => 1}.merge joe_auth
         expect(:post, "#{github_yaml}/repos/create", 2)
-        @repo = GitHub::Repo.create(:name=>'new_repo', :description => 'New repo',
+        @repo = GitHub::Repo.create!(:name=>'new_repo', :description => 'New repo',
                                     :homepage => 'http://joe.org/new_repo', :private => false)
         should_be_repo @repo, 'new_repo', :with_attributes
       end
@@ -154,7 +153,7 @@ module GitHubTest
         authenticate_as_joe
 #        keys = {:name => 'fine_repo', :public => 1}.merge joe_auth # Fake_Web doesn't support key expectations yet
         expect(:post, "#{github_yaml}/repos/create", 4)
-        res = GitHub::Repo.create(:name=>'fine_repo')
+        res = GitHub::Repo.create!(:name=>'fine_repo')
         res.should have_key 'error' # res = {"error"=>[{"error"=>"repository not found"}]}
         res['error'].should be_kind_of Array
         res['error'].first.should have_key 'error'
@@ -162,11 +161,10 @@ module GitHubTest
       end
     end
 
-    context '#delete' do
+    context '#delete!' do
       before(:each) do
-        authenticate_as_joe
         expect(:post, "#{github_yaml}/repos/create", 1)
-        @repo = GitHub::Repo.create(:user=>'joe007', :repo=>'new_repo')
+        @repo = GitHub::Repo.create!(:user=>'joe007', :repo=>'new_repo')
         raise 'Repo creation failed' unless @repo.is_a? GitHub::Repo
         wait
       end
@@ -176,8 +174,9 @@ module GitHubTest
 #                  :body => body_from_file('/repos/delete/new_repo.1') }
 #        post2 = { :expected_keys => {:delete_token => :any}.merge(joe_auth),
 #                  :body => body_from_file('/repos/delete/new_repo.2') }
+        authenticate_as_joe
         expect(:post, "#{github_yaml}/repos/delete/new_repo", [1, 2])
-        res = @repo.delete
+        res = @repo.delete!
         res['status'].should == 'deleted'
       end
     end

@@ -26,7 +26,7 @@ Spec::Runner.configure do |config|
   config.extend(SpecMacros)
 end
 
-module GitHubTest
+module GitHubTest 
 
   # Test related Constants:
   TEST_FAKE_WEB = true # turning this flag on routes all Net calls to local stubs

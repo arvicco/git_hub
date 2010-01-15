@@ -137,14 +137,14 @@ module GitHubTest
           # after - normal state is for joe to follow arvicco
           authenticate_as_joe
           expect(:post, "#{github_yaml}/user/follow/arvicco")
-          joe.follow :arvicco
+          joe.follow! :arvicco
           wait
         end
 
         it 'stops following previously followed user (if authenticated)' do
           expect(:get, "http://github.com/users/follow") do
             expect(:get, "#{github_yaml}/user/show/joe007/following", :empty)
-            following = joe.unfollow :arvicco
+            following = joe.unfollow! :arvicco
             following.should be_kind_of Array
             following.should be_empty
           end
@@ -153,11 +153,11 @@ module GitHubTest
         it 'starts following new user (if authenticated)' do
           # before - normal state is for joe to follow arvicco
           expect(:get, "#{github_yaml}/user/show/joe007/following")
-          joe.unfollow :arvicco
+          joe.unfollow! :arvicco
           wait
 
           expect(:post, "#{github_yaml}/user/follow/arvicco") do
-            following = joe.follow :arvicco
+            following = joe.follow! :arvicco
             following.should be_kind_of Array
             following.should have(1).user
             following.each {|user| user.should be_a GitHub::User}

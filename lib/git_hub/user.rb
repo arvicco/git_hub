@@ -59,11 +59,13 @@ module GitHub
       get("/show/#{@name}/following")['users'].map {|user| User.find(:user => user )}
     end
 
-    def follow user
+    def follow! user
+      API.ensure_auth
       post("/follow/#{user}")['users'].map {|user| User.find(:user => user )}
     end
 
-    def unfollow user # api /user/unfollow/:user is not working properly atm, using http
+    def unfollow! user # api /user/unfollow/:user is not working properly atm, using http
+      API.ensure_auth
       res = get 'http://github.com/users/follow', 'target' => user
       raise "User Not Found #{user}" unless res.code == 302.to_s
       following

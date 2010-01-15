@@ -1,6 +1,7 @@
 require 'yaml'
 
 module GitHub
+  API = Api.instance
   class Base
 
     def initialize(attributes={})
@@ -18,7 +19,7 @@ module GitHub
       def request verb, uri, params = {}
         full_uri = uri[0] == '/' ? base_uri+uri : uri
         #p "request: #{verb} #{full_uri} #{params}"
-        res = api.request verb, full_uri, params
+        res = API.request verb, full_uri, params
         #p "response: #{res}: #{res.code}: #{res.http_version}: #{res.message}", res.body
         if res.respond_to?(:content_type, :body) && res.content_type =~ /application\/x-yaml/
           YAML::load(res.body)
@@ -33,10 +34,6 @@ module GitHub
 
       def post uri, params = {}
         request :post, uri, params
-      end
-
-      def api
-        Api.instance
       end
 
       def set_resource base_uri, singulars, plurals
@@ -68,7 +65,7 @@ module GitHub
         args.map do |arg|
           opts[arg] || opts[arg.to_sym] || case arg.to_sym
             when :user
-              opts[:owner] || opts[:username] || opts[:login] || api.auth['login']
+              opts[:owner] || opts[:username] || opts[:login] || API.auth['login']
             when :repo
               opts[:repository] || opts[:name] || opts[:project]
             when :sha
@@ -107,10 +104,6 @@ module GitHub
 
     def post uri, params ={}
       self.class.post uri, params
-    end
-
-    def api
-      self.class.api
     end
 
     def to_s

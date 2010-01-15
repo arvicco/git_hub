@@ -50,7 +50,7 @@ module GitHub
     end
 
     def clone_url
-      url = private? || api.auth['login'] == user ? "git@github.com:" : "git://github.com/"
+      url = private? || API.auth['login'] == user ? "git@github.com:" : "git://github.com/"
       url += "#{@user}/#{@name}.git"
     end
 
@@ -94,17 +94,17 @@ module GitHub
       alias search find
 
       # Create new github repo, accepts Hash with :repo, :description, :homepage, :public/:private
-      def create(opts)
+      def create!(opts)
         repo, desc, homepage, public = extract opts, :repo, :desc, :homepage, :public
-        api.ensure_auth opts
+        API.ensure_auth opts
         instantiate post("/create", 'name' => repo, 'description' => desc,
-                             'homepage' => homepage, 'public' => (public ? 1 : 0))
+                         'homepage' => homepage, 'public' => (public ? 1 : 0))
       end
     end 
 
     # Delete github repo, accepts optional Hash with authentication
-    def delete(opts = {})
-      api.ensure_auth opts
+    def delete!(opts = {})
+      API.ensure_auth opts
       result = post("/delete/#{@name}")
       if token = result['delete_token']
         post("/delete/#{@name}", 'delete_token' => token)
