@@ -16,11 +16,9 @@ module GitHub
     end
 
     class << self
-      def request verb, uri, params = {}
+      def request verb, uri, data = {}
         full_uri = uri[0] == '/' ? base_uri+uri : uri
-        #p "request: #{verb} #{full_uri} #{params}"
-        res = API.request verb, full_uri, params
-        #p "response: #{res}: #{res.code}: #{res.http_version}: #{res.message}", res.body
+        res = API.request verb, full_uri, data
         if res.respond_to?(:content_type, :body) && res.content_type =~ /application\/x-yaml/
           YAML::load(res.body)
         else
@@ -28,12 +26,12 @@ module GitHub
         end
       end
 
-      def get uri, params ={}
-        request :get, uri, params
+      def get uri, data = {}
+        request :get, uri, data
       end
 
-      def post uri, params = {}
-        request :post, uri, params
+      def post uri, data = {}
+        request :post, uri, data
       end
 
       def set_resource base_uri, singulars, plurals
@@ -58,22 +56,22 @@ module GitHub
 
       private
 
-      # matches arguments supplied by args Array to parameters specified by *params
+      # matches arguments supplied by args Array to parameters specified by *params Array
       # TODO: replace opts[:name] with class-specific opts[:@singular]?
       def extract(args, *params)
-        args, opts = args.args_and_options
-        params.map do |param|
-          arg = args.next rescue nil
-          arg ||= extract_value opts, param
-          arg || case param
+        args, opts = args.args_and_opts
+        params.map do |param|                # for every symbol in params Array:
+          arg = args.next rescue nil         #   try to assign sequential argument from args
+          arg ||= extract_value opts, param  #   try to assign named argument from opts
+          arg || case param                  #   assign defaults if no other value found
             when :user
               API.auth['login']
             when :branch
               'master'
             when :public
-              !opts[:private] unless opts[:public] == false
+              !opts[:private] unless arg == false
             else
-              nil
+              nil                             #   no default found, parameter is nil
           end
         end
       end
@@ -87,8 +85,7 @@ module GitHub
       # extracts from opts value indexed by param or any of its nicknames
       def extract_value opts, param
         nicks = [param, NICKNAMES[param]].flatten.compact
-        opts.values_at(*nicks).compact.first ||
-                opts.values_at(*nicks.map(&:to_s)).compact.first
+        opts.values_at(*nicks+nicks.map(&:to_s)).compact.first
       end
 
       # Creates single instance or Array of instances for a given Hash of
@@ -107,12 +104,12 @@ module GitHub
       end
     end
 
-    def get uri, params ={}
-      self.class.get uri, params
+    def get uri, data = {}
+      self.class.get uri, data
     end
 
-    def post uri, params ={}
-      self.class.post uri, params
+    def post uri, data = {}
+      self.class.post uri, data
     end
 
     def to_s

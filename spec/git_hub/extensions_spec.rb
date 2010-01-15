@@ -29,23 +29,23 @@ module GitHubTest
   end
 
   describe Array do
-    context '#args_and_options' do
+    context '#args_and_opts' do
       it 'splits array into two components: enum with args and options hash' do
-        args, opts = [1, 2, 3=>4].args_and_options
+        args, opts = [1, 2, {3=>4}].args_and_opts
         args.should be_an Enumerator
         args.to_a.should == [1, 2]
         opts.should == {3=>4}
       end
 
       it 'correctly splits options if 2 Hashes are last' do
-        args, opts = [1, 2, {3=>4}, 5=>6].args_and_options
+        args, opts = [1, 2, {3=>4}, {5=>6}].args_and_opts
         args.should be_an Enumerator
         args.to_a.should == [1, 2, {3=>4}]
         opts.should == {5=>6}
       end
 
       it 'returns empty options if last component is not a Hash' do
-        args, opts = [1, 2, {3=>4}, 5].args_and_options
+        args, opts = [1, 2, {3=>4}, 5].args_and_opts
         args.should be_an Enumerator
         args.to_a.should == [1, 2, {3=>4}, 5]
         opts.should == {}

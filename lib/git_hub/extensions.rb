@@ -14,9 +14,10 @@ class Array
 
   # Splits (arguments) Array into two components: enum for args and options Hash
   # options Hash (if any) should be the last component of Array
-  def args_and_options 
-      if self.last.is_a?(Hash)
-        [self[0..-2].to_enum, self.last]
+  def args_and_opts 
+      opts = self.last
+      if opts.is_a?(Hash)
+        [self[0..-2].to_enum, opts]
       else
         [self.to_enum, {}]
       end
