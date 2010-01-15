@@ -28,12 +28,12 @@ end
 module GitHubTest 
 
   # Test related Constants:
-  TEST_FAKE_WEB = true # turning this flag on routes all Net calls to local stubs
+  TEST_FAKE_WEB = false # turning this flag on routes all Net calls to local stubs
 
   API = GitHub::Api.instance
 
   # Extract response from file
-  def response_from_file( file_path, uri_path='' )
+  def response_from_file( file_path, uri_path = '' )
     filename = File.join(File.dirname(__FILE__), 'stubs', file_path + '.res')
     unless File.exists?(filename) && !File.directory?(filename)
       raise "No stub file #{filename}. To obtain it use:\n#{curl_string(filename, uri_path)}"
@@ -97,7 +97,7 @@ module GitHubTest
     GitHub::User.find(:user=>'joe007')
   end
 
-  def github_http
+  def github_http 
     'http://github.com'
   end
 

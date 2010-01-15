@@ -67,7 +67,7 @@ module GitHub
     # :path:: Only commits for specific path
     # :sha/:id:: Only one commit with specific id (sha)
     def commits opts = {}
-       Commit.find opts.merge(:user => @user, :repo => @name)
+      Commit.find opts.merge(:user => @user, :repo => @name)
     end
 
     class << self # Repo class methods
@@ -100,18 +100,16 @@ module GitHub
         instantiate post("/create", 'name' => repo, 'description' => desc,
                          'homepage' => homepage, 'public' => (public ? 1 : 0))
       end
-    end 
+    end
 
     # Delete github repo, accepts optional Hash with authentication
     def delete!
       API.ensure_auth
       result = post("/delete/#{@name}")
-      if token = result['delete_token']
-        post("/delete/#{@name}", 'delete_token' => token)
-      else
-        result
-      end
-    end 
+      token = result['delete_token']
+      return result unless token
+      post("/delete/#{@name}", 'delete_token' => token)
+    end
 
     def add_service
     end
@@ -133,14 +131,13 @@ module GitHub
 
     def hash_of_commits(resource)
       result = get "/show/#{@user}/#{@name}/#{resource}"
-      if tagged_shas = result[resource.to_s]
-        tagged_commits = tagged_shas.map do |tag,sha|
-          [tag, Commit.find(:user=>@user, :repo=>@name, :sha=>sha)]
-        end
-        Hash[*tagged_commits.flatten]
-      else
-        result
+      tagged_shas = result[resource.to_s]
+      return result unless tagged_shas
+
+      tagged_commits = tagged_shas.map do |tag, sha|
+        [tag, Commit.find(:user=>@user, :repo=>@name, :sha=>sha)]
       end
+      Hash[*tagged_commits.flatten]
     end
 
     # repos/show/:user/:repo/languages

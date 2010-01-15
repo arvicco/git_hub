@@ -70,15 +70,15 @@ module GitHub
         args, opts = args.args_and_options
         params.map do |param|
           arg = args.next rescue nil
-          arg ||= opts[param] || opts[param.to_sym]
-          nicks = NICKNAMES[param.to_sym]
+          arg ||= opts[param] || opts[param.to_s]
+          nicks = NICKNAMES[param]
           [nicks].flatten.each {|nick| arg ||= opts[nick]} if nicks
-          arg ||= case param.to_sym
-            when :user then
+          arg || case param
+            when :user
               API.auth['login']
-            when :branch then
+            when :branch
               'master'
-            when :public then
+            when :public
               !opts[:private] unless opts[:public] == false
           end
         end
@@ -88,9 +88,11 @@ module GitHub
       # attribute Hash(es), returns original Hash if unsuccessful
       def instantiate hash, extra_attributes={}
         return hash unless hash.kind_of? Hash
-        if init = hash.values_at(*@singulars).compact.first
+        init = hash.values_at(*@singulars).compact.first
+        inits = hash.values_at(*@plurals).compact.first
+        if init
           new init.merge extra_attributes
-        elsif inits = hash.values_at(*@plurals).compact.first
+        elsif inits
           inits.map {|each| new each.merge extra_attributes}
         else
           hash
