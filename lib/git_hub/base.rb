@@ -61,11 +61,11 @@ module GitHub
       # matches arguments supplied by args Array to parameters specified by *params
       # TODO: replace opts[:name] with class-specific opts[:@singular]?
       def extract(args, *params)
-        arg_enum, opts = split_with_opts *args
-        #p arg_enum.to_a, opts
+        args, opts = args.args_and_options
         params.map do |param|
-          arg = arg_enum.next rescue nil
-          arg ||= opts[param] || opts[param.to_sym] || case param.to_sym
+          arg = args.next rescue nil
+          arg ||= opts[param] || opts[param.to_sym]
+          arg || case param.to_sym
             when :user
               opts[:owner] || opts[:username] || opts[:login] || API.auth['login']
             when :repo
@@ -83,15 +83,6 @@ module GitHub
             else
               nil
           end
-        end
-      end
-
-      # splits argument list into enumerator for normal arguments and options hash
-      def split_with_opts *args
-        if args.last.is_a?(Hash)
-          [args[0..-2].to_enum, args.last]
-        else
-          [args.to_enum, {}]
         end
       end
 

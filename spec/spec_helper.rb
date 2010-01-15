@@ -53,7 +53,7 @@ module GitHubTest
   # Converts path to uri, registers it with FakeWeb with stub file at stubs/(http)/path as a response
   # If extensions given (possibly as an Array), looks for stub files with extensions, responds in sequence
   # If block is given, yields to block and checks that registered uri was hit during block execution
-  def expect(method, path, extensions = nil)
+  def expect( method, path, extensions = nil )
     if TEST_FAKE_WEB
       uri_path = path
       [extensions].flatten.each do |ext|
@@ -117,7 +117,7 @@ module GitHubTest
   end
 
   # specific expectations used in more than one spec file
-  def should_be_commit commit, type
+  def should_be_commit( commit, type )
     arvicco = { 'name'=> 'arvicco', 'email'=> 'arvitallian@gmail.com'}
     commit.should be_a GitHub::Commit
     commit.author.should == arvicco

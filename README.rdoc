@@ -42,18 +42,19 @@ Create new repo or delete existing repo (need to authenticate with your github c
 Retrieve tags, branches and commits for a repo:
   puts repo.tags['v0.1.0'].committer
   puts repo.branches['master'].committed_date
-  repo.commits.each {|commit| p commit.author}
+  repo.commits(:branch=>'left').each {|commit| p commit.author}
 
-#tags and #branches returned as a hash of (latest) commits, with tag/branch name as keys.
-#commits returns an array of ALL commit objects for a repo (may take a while to load)  
+#tags and #branches return Hash of (latest) commits, with tag/branch name as keys.
+#commits returns an Array of commit objects for a given repo. If no options given,
+a whole set of commits for this repo is returned (this takes a while to load)
 
 === Commits API
 You can work either with commit objects either directly, or via Repo API
 
-Retrieve info for a specific commit:
+Retrieve info for a specific commit or a set of commits:
+  commit = Commit.find(:user=>user_name, :repo=>repo_name, :sha=>'commit_sha')
   commits = Commit.find(:user=>user_name, :repo=>repo_name, :branch=>'master')
   commits = Commit.find(:user=>user_name, :repo=>repo_name, :branch=>'master', :path=>'README.rdoc')
-  commit = Commit.find(:user=>user_name, :repo=>repo_name, :sha=>'commit_sha')
   # or, if repo is already retrieved:
   commit = repo.commits.last
   commit = repo.tags['v0.1.0']
