@@ -46,7 +46,7 @@ Retrieve tags, branches and commits for a repo:
 
 #tags and #branches return Hash of (latest) commits, with tag/branch name as keys.
 #commits returns an Array of commit objects for a given repo. If no options given,
-a whole set of commits for this repo is returned (this takes a while to load)
+a whole set of commits for this repo is returned (this takes a while to load).
 
 === Commits API
 You can work either with commit objects either directly, or via Repo API
@@ -81,10 +81,10 @@ Retrieve/manage user's network:
 
 == PRIOR ART:
 
-Le-Git - http://github.com/technicalpickles/le-git
-Octopi - http://github.com/fcoury/octopi
-Github-gem  - http://github.com/defunkt/github-gem
-Github-control - http://github.com/halorgium/github-control
+  Le-Git - http://github.com/technicalpickles/le-git
+  Octopi - http://github.com/fcoury/octopi
+  Github-gem  - http://github.com/defunkt/github-gem
+  Github-control - http://github.com/halorgium/github-control
 
 == LICENSE:
 

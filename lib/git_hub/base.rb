@@ -34,10 +34,10 @@ module GitHub
         request :post, uri, data
       end
 
-      def set_resource base_uri, singulars, plurals
+      def set_resource base_uri, singular, plural
         @base_uri = base_uri
-        @singulars = [singulars].flatten
-        @plurals = [plurals].flatten
+        @singular = singular.to_s
+        @plural = plural.to_s
       end
 
       def base_uri
@@ -56,22 +56,24 @@ module GitHub
 
       private
 
-      # matches arguments supplied by args Array to parameters specified by *params Array
+      # matches arguments supplied by args Array to parameters specified by *params Array of Symbols
       # TODO: replace opts[:name] with class-specific opts[:@singular]?
       def extract(args, *params)
         args, opts = args.args_and_opts
-        params.map do |param|                # for every symbol in params Array:
-          arg = args.next rescue nil         #   try to assign sequential argument from args
-          arg ||= extract_value opts, param  #   try to assign named argument from opts
-          arg || case param                  #   assign defaults if no other value found
+        name = extract_value opts, :name
+        opts.merge!(@singular.to_sym => name ) if name
+        params.map do |param| #                 for every symbol in params Array:
+          arg = args.next rescue nil #            try to assign sequential argument from args
+          arg ||= extract_value opts, param #     try to assign named argument from opts
+          arg || case param #                     assign defaults if no other value found
             when :user
               API.auth['login']
             when :branch
               'master'
             when :public
-              !opts[:private] unless arg == false
+              !extract_value(opts, :private) unless arg == false
             else
-              nil                             #   no default found, parameter is nil
+              nil #                               no default found, parameter is nil
           end
         end
       end
@@ -92,8 +94,9 @@ module GitHub
       # attribute Hash(es), returns original Hash if unsuccessful
       def instantiate hash, extra_attributes={}
         return hash unless hash.kind_of? Hash
-        init = hash.values_at(*@singulars).compact.first
-        inits = hash.values_at(*@plurals).compact.first
+#        init = hash.values_at(*@singulars).compact.first
+        init = hash[@singular]
+        inits = hash[@plural]
         if init
           new init.merge extra_attributes
         elsif inits

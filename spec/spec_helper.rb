@@ -28,7 +28,7 @@ end
 module GitHubTest 
 
   # Test related Constants:
-  TEST_FAKE_WEB = true # turning this flag on routes all Net calls to local stubs
+  TEST_FAKE_WEB = true   # turning this flag on routes all Net calls to local stubs
 
   API = GitHub::Api.instance
 
