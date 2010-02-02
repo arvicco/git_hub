@@ -1,6 +1,4 @@
 require 'spec'
-require 'fakeweb'
-require 'fakeweb_matcher'
 require File.expand_path(File.join(File.dirname(__FILE__), %w[.. lib git_hub]))
 
 # Module that extends RSpec with my own extensions/macros
@@ -25,12 +23,20 @@ Spec::Runner.configure do |config|
   config.extend(SpecMacros)
 end
 
-module GitHubTest 
+module GitHubTest
 
   # Test related Constants:
-  TEST_FAKE_WEB = true   # turning this flag on routes all Net calls to local stubs
-
   API = GitHub::Api.instance
+
+  MOCK_WEB = :fakeweb   # turning this flag on routes all Net calls to local stubs
+
+  case MOCK_WEB
+    when :fakeweb
+      require 'fakeweb'
+      require 'fakeweb_matcher'
+    when :webmock
+      require 'webmock/rspec'
+  end
 
   # Extract response from file
   def response_from_file( file_path, uri_path = '' )
@@ -43,8 +49,8 @@ module GitHubTest
 
   # Curl command to retrieve non-existent stub file
   def curl_string( filename, uri_path )
-    if api.authenticated?
-      "curl -i -d \"login=#{api.auth['login']}&token=#{api.auth['token']}\" #{uri_path} > #{filename}"
+    if API.authenticated?
+      "curl -i -d \"login=#{API.auth['login']}&token=#{api.auth['token']}\" #{uri_path} > #{filename}"
     else
       "curl -i #{uri_path} > #{filename}"
     end
@@ -54,7 +60,7 @@ module GitHubTest
   # If extensions given (possibly as an Array), looks for stub files with extensions, responds in sequence
   # If block is given, yields to block and checks that registered uri was hit during block execution
   def expect( method, path, extensions = nil )
-    if TEST_FAKE_WEB
+    if MOCK_WEB
       uri_path = path
       [extensions].flatten.each do |ext|
         case path
@@ -67,14 +73,44 @@ module GitHubTest
             file_path = path
         end
         file_path += ".#{ext}" if ext
-        FakeWeb.register_uri(method, uri_path, :response=>response_from_file(file_path, uri_path))
+        case MOCK_WEB
+          when :fakeweb
+            FakeWeb.register_uri(method, uri_path, :response=>response_from_file(file_path, uri_path))
+          when :webmock
+            WebMock.stub_request(method, uri_path).to_return(File.new(response_from_file(file_path, uri_path)))
+        end
       end
       if block_given?
         yield
-        FakeWeb.should have_requested(method, uri_path)
+        case MOCK_WEB
+          when :fakeweb
+            FakeWeb.should have_requested(method, uri_path)
+          when :webmock
+            WebMock.should have_requested(method, uri_path)
+        end
       end
     else
       yield if block_given?
+    end
+  end
+
+  def web_setup
+    case MOCK_WEB
+      when :fakeweb
+        FakeWeb.allow_net_connect = false
+      when :webmock
+        WebMock.allow_net_connect!
+    end
+  end
+
+  def web_teardown
+    case MOCK_WEB
+      when :fakeweb
+        FakeWeb.clean_registry
+        FakeWeb.allow_net_connect = true
+      when :webmock
+        WebMock.reset_webmock
+        WebMock.disable_net_connect!
     end
   end
 
@@ -97,7 +133,7 @@ module GitHubTest
     GitHub::User.find(:user=>'joe007')
   end
 
-  def github_http 
+  def github_http
     'http://github.com'
   end
 
@@ -108,12 +144,12 @@ module GitHubTest
   # repo name for 'new_repo' for real life tests - needed because GitHub
   # gets stuck after several attempts to create repo with the same name
   def new_repo
-    @new_repo_name ||= TEST_FAKE_WEB ? 'new_repo' : "new_repo#{Time.now.strftime("%Y%m%d-%H%M%S")}"
+    @new_repo_name ||= MOCK_WEB ? 'new_repo' : "new_repo#{Time.now.strftime("%Y%m%d-%H%M%S")}"
   end
 
   # waits a little bit - needed because cache is sticky on real github
   def wait
-    sleep 1 unless TEST_FAKE_WEB
+    sleep 1 unless MOCK_WEB
   end
 
   # specific expectations used in more than one spec file

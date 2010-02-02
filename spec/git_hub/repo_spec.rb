@@ -63,11 +63,9 @@ module GitHubTest
   end
 
   describe GitHub::Repo do
-    before(:all) do
-      FakeWeb.allow_net_connect = false if TEST_FAKE_WEB
-    end
+    before(:all) {web_setup}
     after(:each) do
-      FakeWeb.clean_registry if TEST_FAKE_WEB
+      web_teardown
       clear_auth
     end
 

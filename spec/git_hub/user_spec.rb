@@ -1,5 +1,6 @@
 require File.expand_path(
         File.join(File.dirname(__FILE__), '..', 'spec_helper'))
+
 module GitHubTest
   def should_be_user(user, name = :joe007, type = :show)
     user.name.should == name.to_s
@@ -48,11 +49,9 @@ module GitHubTest
   end
 
   describe GitHub::User do
-    before(:all) do
-      FakeWeb.allow_net_connect = false if TEST_FAKE_WEB
-    end
+    before(:all) {web_setup}
     after(:each) do
-      FakeWeb.clean_registry if TEST_FAKE_WEB
+      web_teardown
       clear_auth
       wait
     end
@@ -138,13 +137,13 @@ module GitHubTest
           expect(:get, "#{github_yaml}/user/show/arvicco")
           authenticate_as_joe
         end
-        after(:each) do
-          # after - normal state is for joe to follow arvicco
-          authenticate_as_joe
-          expect(:post, "#{github_yaml}/user/follow/arvicco")
-          joe.follow! :arvicco
-          wait
-        end
+#        after(:each) do
+#          # after - normal state is for joe to follow arvicco
+#          authenticate_as_joe
+#          expect(:post, "#{github_yaml}/user/follow/arvicco")
+#          joe.follow! :arvicco
+#          wait
+#        end
 
         it 'stops following previously followed user (if authenticated)' do
           expect(:get, "http://github.com/users/follow") do
