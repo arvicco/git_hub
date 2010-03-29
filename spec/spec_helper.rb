@@ -28,7 +28,7 @@ module GitHubTest
   # Test related Constants:
   API = GitHub::Api.instance
 
-  MOCK_WEB = :fakeweb   # turning this flag on routes all Net calls to local stubs
+  MOCK_WEB = :webmock   # turning this flag on routes all Net calls to local stubs
 
   case MOCK_WEB
     when :fakeweb
