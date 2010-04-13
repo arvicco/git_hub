@@ -1,37 +1,24 @@
-
 module GitHub
+  require 'pathname'
 
-  # :stopdoc:
-  LIBPATH = ::File.expand_path(::File.dirname(__FILE__)) + ::File::SEPARATOR
-  PATH = ::File.dirname(LIBPATH) + ::File::SEPARATOR
-  # :startdoc:
+  VERSION_FILE = Pathname.new(__FILE__).dirname + '../VERSION'   # :nodoc:
+  VERSION = VERSION_FILE.exist? ? VERSION_FILE.read.strip : nil
 
-  # Returns the library path for the module. If any arguments are given,
-  # they will be joined to the end of the libray path using
-  # <tt>File.join</tt>.
+  # Requires ruby source file(s). Accepts either single filename/glob or Array of filenames/globs.
+  # Accepts following options:
+  # :*file*:: Lib(s) required relative to this file - defaults to __FILE__
+  # :*dir*:: Required lib(s) located under this dir name - defaults to gem name
   #
-  def self.libpath( *args )
-    args.empty? ? LIBPATH : ::File.join(LIBPATH, args.flatten)
+  def self.require_libs( libs, opts={} )
+    file = Pathname.new(opts[:file] || __FILE__)
+    [libs].flatten.each do |lib|
+      name = file.dirname + (opts[:dir] || file.basename('.*')) + lib.gsub(/(?<!.rb)$/, '.rb')
+      Pathname.glob(name.to_s).sort.each {|rb| require rb}
+    end
   end
-
-  # Returns the path for the module. If any arguments are given,
-  # they will be joined to the end of the path using
-  # <tt>File.join</tt>.
-  #
-  def self.path( *args )
-    args.empty? ? PATH : ::File.join(PATH, args.flatten)
-  end
-
-  # Utility method used to require all files ending in .rb that lie in the
-  # directory below this file that has the same name as the filename passed
-  # in. Optionally, a specific _directory_ name can be passed in such that
-  # the _filename_ does not have to be equivalent to the directory.
-  #
-  def self.require_all_libs_relative_to( fname )
-    ruby_files = ::File.expand_path(::File.join(::File.dirname(fname), '**', '*.rb'))
-    Dir.glob(ruby_files).sort.each {|rb| require rb}
-  end
-
 end  # module GitHub
 
-GitHub.require_all_libs_relative_to(__FILE__)
+# Require all ruby source files located under directory lib/git_hub
+# If you need files in specific order, you should specify it here before the glob
+GitHub.require_libs %W[**/*]
+

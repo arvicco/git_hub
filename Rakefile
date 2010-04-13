@@ -1,58 +1,24 @@
-require 'rubygems'
-require 'rake'
+require 'pathname'
+NAME = 'git_hub'
+BASE_DIR = Pathname.new(__FILE__).dirname
+LIB_DIR =  BASE_DIR + 'lib'
+PKG_DIR =  BASE_DIR + 'pkg'
+DOC_DIR =  BASE_DIR + 'rdoc'
+
+$LOAD_PATH.unshift LIB_DIR.to_s
+require NAME
+
+CLASS_NAME = GitHub
+VERSION = CLASS_NAME::VERSION
 
 begin
-  require 'jeweler'
-  Jeweler::Tasks.new do |gem|
-    gem.name = "git_hub"
-    gem.summary = %Q{Simple interface to github API}
-    gem.description = %Q{Simple interface to github API}
-    gem.email = "arvitallian@gmail.com"
-    gem.homepage = "http://github.com/arvicco/git_hub"
-    gem.authors = ["arvicco"]
-    gem.add_development_dependency "rspec", ">= 1.2.9"
-    gem.add_development_dependency "cucumber", ">= 0"
-    gem.executables = ['git_hub']
-    # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
-  end
-  Jeweler::GemcutterTasks.new
+  require 'rake'
 rescue LoadError
-  puts "Jeweler (or a dependency) not available. Install it with: gem install jeweler"
+  require 'rubygems'
+  gem 'rake', '~> 0.8.3.1'
+  require 'rake'
 end
 
-require 'spec/rake/spectask'
-Spec::Rake::SpecTask.new(:spec) do |spec|
-  spec.libs << 'lib' << 'spec'
-  spec.spec_files = FileList['spec/**/*_spec.rb']
-end
+# Load rakefile tasks
+Dir['tasks/*.rake'].sort.each { |file| load file }
 
-Spec::Rake::SpecTask.new(:rcov) do |spec|
-  spec.libs << 'lib' << 'spec'
-  spec.pattern = 'spec/**/*_spec.rb'
-  spec.rcov = true
-end
-
-task :spec => :check_dependencies
-
-begin
-  require 'cucumber/rake/task'
-  Cucumber::Rake::Task.new(:features)
-
-  task :features => :check_dependencies
-rescue LoadError
-  task :features do
-    abort "Cucumber is not available. In order to run features, you must: sudo gem install cucumber"
-  end
-end
-
-task :default => :spec
-
-require 'rake/rdoctask'
-Rake::RDocTask.new do |rdoc|
-  version = File.exist?('VERSION') ? File.read('VERSION') : ""
-
-  rdoc.rdoc_dir = 'rdoc'
-  rdoc.title = "git_hub #{version}"
-  rdoc.rdoc_files.include('README*')
-  rdoc.rdoc_files.include('lib/**/*.rb')
-end
