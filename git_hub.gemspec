@@ -9,8 +9,8 @@ require 'git_hub'
 Gem::Specification.new do |gem|
   gem.name        = "git_hub"
   gem.version     = GitHub::VERSION
-  gem.summary     = %q{Describe package git_hub}
-  gem.description = %q{Describe package git_hub}
+  gem.summary     = %Q{Simple interface to github API}
+  gem.description = %Q{Simple interface to github API}
   gem.authors     = ["arvicco"]
   gem.email       = "arvitallian@gmail.com"
   gem.homepage    = %q{http://github.com/arvicco/git_hub}
@@ -33,6 +33,9 @@ Gem::Specification.new do |gem|
   # Dependencies
   gem.add_development_dependency(%q{rspec}, [">= 1.2.9"])
   gem.add_development_dependency(%q{cucumber}, [">= 0"])
+  gem.add_development_dependency(%q{webmock}, [">= 0"])
+  gem.add_development_dependency(%q{fakeweb}, [">= 0"])
+  gem.add_development_dependency(%q{fakeweb_matcher}, [">= 0"])
   #gem.add_dependency(%q{other}, [">= 1.2.9"])
 
   gem.rubyforge_project = ""
