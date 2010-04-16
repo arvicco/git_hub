@@ -1,11 +1,11 @@
 require 'pathname'
 NAME = 'git_hub'
-BASE_DIR = Pathname.new(__FILE__).dirname
-LIB_DIR =  BASE_DIR + 'lib'
-PKG_DIR =  BASE_DIR + 'pkg'
-DOC_DIR =  BASE_DIR + 'rdoc'
+BASE_PATH = Pathname.new(__FILE__).dirname
+LIB_PATH =  BASE_PATH + 'lib'
+PKG_PATH =  BASE_PATH + 'pkg'
+DOC_PATH =  BASE_PATH + 'rdoc'
 
-$LOAD_PATH.unshift LIB_DIR.to_s
+$LOAD_PATH.unshift LIB_PATH.to_s
 require NAME
 
 CLASS_NAME = GitHub

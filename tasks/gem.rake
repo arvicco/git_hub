@@ -13,12 +13,12 @@ namespace :gem do
   desc "(Re-)Build gem"
   task :build do
     puts "Remove existing gem package"
-    rm_rf PKG_DIR
+    rm_rf PKG_PATH
     puts "Build new gem package"
     system "gem build #{NAME}.gemspec"
     puts "Move built gem to package dir"
-    mkdir_p PKG_DIR
-    mv gem_file, PKG_DIR
+    mkdir_p PKG_PATH
+    mv gem_file, PKG_PATH
   end
 
   desc "Cleanup already installed gem(s)"
@@ -29,11 +29,11 @@ namespace :gem do
 
   desc "Build and install gem"
   task :install => :build do
-    system "gem install #{PKG_DIR}/#{gem_file}"
+    system "gem install #{PKG_PATH}/#{gem_file}"
   end
 
   desc "Build and push gem to Gemcutter"
   task :release => [:build, 'git:tag'] do
-    system "gem push #{PKG_DIR}/#{gem_file}"
+    system "gem push #{PKG_PATH}/#{gem_file}"
   end
 end

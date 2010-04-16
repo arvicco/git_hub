@@ -1,6 +1,8 @@
 
 == 0.3.2 / 2010-04-13
 
-* 'Moving from bones'
-
 == 0.3.3 / 2010-04-14
+
+== 0.3.4 / 2010-04-16
+
+* Moved from Bones/Jeweler to own Rake tasks

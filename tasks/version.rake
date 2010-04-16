@@ -34,11 +34,11 @@ class Version
     @build = build
   end
 
-  def write(description = nil)
+  def write(desc = nil)
     CLASS_NAME::VERSION_FILE.open('w') {|file| file.puts to_s }
-    (BASE_DIR + 'HISTORY').open('a') do |file|
+    (BASE_PATH + 'HISTORY').open('a') do |file|
       file.puts "\n== #{to_s} / #{Time.now.strftime '%Y-%m-%d'}\n"
-      file.puts "\n* #{description}\n" if description 
+      file.puts "\n* #{desc}\n" if desc
     end
   end
 
@@ -48,7 +48,7 @@ class Version
 end
 
 desc 'Set version: [x.y.z] - explicitly, [1/10/100] - bump major/minor/patch, [.build] - build'
-task :version, [:command, :description] do |t, args|
+task :version, [:command, :desc] do |t, args|
   version = Version.new(VERSION)
   case args.command
     when /^(\d+)\.(\d+)\.(\d+)(?:\.(.*?))?$/  # Set version explicitly
@@ -67,5 +67,5 @@ task :version, [:command, :description] do |t, args|
   end
 
   puts "Writing version #{version} to VERSION file"
-  version.write args.description
+  version.write args.desc
 end

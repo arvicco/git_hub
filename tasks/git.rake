@@ -23,11 +23,12 @@ namespace :git do
   end
 
   desc "Create (release) tag on Github"
-  task :tag => :commit do
-    puts "Creating git tag: #{VERSION}"
-    system %Q{git tag -a -m "Release tag #{VERSION}" #{VERSION}}
-    puts "Pushing local changes to remote"
-    system "git push"
+  task :tag => :push do
+    tag = VERSION
+    puts "Creating git tag: #{tag}"
+    system %Q{git tag -a -m "Release tag #{tag}" #{tag}}
+    puts "Pushing #{tag} to remote"
+    system "git push origin #{tag}"
   end
 
 end
